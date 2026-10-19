@@ -1,13 +1,8 @@
 import type { PayloadRequest } from 'payload'
 import type { CustomEndpointDocumentation } from 'payload-oapi'
-import { createApiSuccessResponse } from '@/utils/apiResponseUtils'
-import { createStandardEndpointDocumentation } from '@/utils/endpointDocUtils'
-
-export interface HealthCheckData {
-  status: 'healthy'
-  uptime: number
-  timestamp: string
-}
+import { getSystemHealthStatusService } from '../../services/system'
+import { createApiSuccessResponse } from '../../utils/apiResponseUtils'
+import { createStandardEndpointDocumentation } from '../../utils/endpointDocUtils'
 
 export const createHealthCheckOpenApiDocumentation = (): CustomEndpointDocumentation => {
   return createStandardEndpointDocumentation({
@@ -34,11 +29,15 @@ export const healthCheckOpenApiDocumentation: CustomEndpointDocumentation =
 // is too heavy; process liveness is all the dashboard/infrastructure needs to see.
 // The PayloadRequest argument stays for endpoint-signature parity with the other handlers.
 export const handleGetHealthCheckEndpoint = async (_req: PayloadRequest): Promise<Response> => {
-  const data: HealthCheckData = {
-    status: 'healthy',
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-  }
-
+  const data = getSystemHealthStatusService()
   return createApiSuccessResponse(data, 200)
+}
+
+export const systemHealthPayloadEndpoint = {
+  path: '/health',
+  method: 'get' as const,
+  custom: {
+    openapi: healthCheckOpenApiDocumentation,
+  },
+  handler: handleGetHealthCheckEndpoint,
 }

@@ -2,10 +2,20 @@
   "name": "payload-elysia-api",
   "version": "1.0.0",
   "type": "module",
+  "types": "./src/server.ts",
   "exports": {
-    ".": "./src/server.ts",
-    "./server": "./src/server.ts",
-    "./payload-types": "./src/payload-types.ts"
+    ".": {
+      "types": "./src/server.ts",
+      "default": "./src/server.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "default": "./src/server.ts"
+    },
+    "./payload-types": {
+      "types": "./src/payload-types.ts",
+      "default": "./src/payload-types.ts"
+    }
   },
   "scripts": {
     "dev": "bun --conditions=development src/server.ts",

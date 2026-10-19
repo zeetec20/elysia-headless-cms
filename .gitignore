@@ -4,4 +4,4 @@ build/
 .DS_Store
 *.tsbuildinfo
 .env
-node_modules
+.omo/bench/

@@ -1,45 +1,60 @@
 import type { AuthProvider } from '@refinedev/core'
-import type { PayloadMeResponse } from 'payload-elysia-api/server'
-import { invalidateIdentityCache } from '@/api/accessControl'
-import type { PayloadErrorBody } from '@/api/dataProvider'
-import { payloadApi } from '@/api/edenClient'
+import type { PayloadUser } from '@/types'
+import { apiClient } from '../restClient'
+import { invalidateIdentityCache } from './accessControl'
 
-const fetchCurrentUser = async (): Promise<PayloadMeResponse['user']> => {
-  const response = requireUserResponse(await payloadApi.users.me.get())
-  return response.user
+const extractSessionErrorMessage = (error: unknown): string => {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof error.message === 'string'
+  ) {
+    return error.message
+  }
+  return 'Session request failed'
 }
 
-const requireUserResponse = (result: {
-  data: PayloadMeResponse | null
-  error: unknown
-  status: number
-}): PayloadMeResponse => {
-  if (!result.data) {
-    throw createSessionError(result.status, result.error)
+const extractErrorStatusCode = (error: unknown): number | undefined => {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'statusCode' in error &&
+    typeof error.statusCode === 'number'
+  ) {
+    return error.statusCode
   }
-  return result.data
+  return undefined
 }
 
 const createSessionError = (statusCode: number, error: unknown): Error => {
-  const body = (error as { value?: PayloadErrorBody } | null)?.value
-  const sessionError = new Error(body?.message ?? 'Session request failed') as Error & {
-    statusCode?: number
-  }
+  const message = extractSessionErrorMessage(error)
+  const sessionError = new Error(message) as Error & { statusCode?: number }
   sessionError.statusCode = statusCode
   return sessionError
+}
+
+const fetchCurrentUser = async (): Promise<PayloadUser | null> => {
+  const { data, error, response } = await apiClient.GET('/api/users/me', {})
+  if (!response.ok) {
+    throw createSessionError(response.status, error)
+  }
+  return (data?.user as PayloadUser | undefined) ?? null
 }
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
     try {
-      const login = await payloadApi.users.login.post({ email, password })
-      if (!login.data) {
-        throw createSessionError(login.status, login.error)
+      const { data, error, response } = await apiClient.POST('/api/users/login', {
+        body: { email, password },
+      })
+      if (!data?.user) {
+        throw createSessionError(response.status, error)
       }
       // NOTE: Only superadmin accounts may use the dashboard; guests keep REST/registration
       // semantics server-side. Clear the just-set cookie so the rejected session does not linger.
-      if (login.data.user.role !== 'superadmin') {
-        await payloadApi.users.logout.post().catch(() => undefined)
+      if (data.user.role !== 'superadmin') {
+        await apiClient.POST('/api/users/logout', {}).catch(() => undefined)
         return {
           success: false,
           error: {
@@ -77,7 +92,7 @@ export const authProvider: AuthProvider = {
 
   logout: async () => {
     invalidateIdentityCache()
-    await payloadApi.users.logout.post().catch(
+    await apiClient.POST('/api/users/logout', {}).catch(
       () =>
         // Best-effort logout; the cookie clears server-side, a failed call still ends the session.
         undefined,
@@ -107,7 +122,7 @@ export const authProvider: AuthProvider = {
   },
 
   onError: async (error) => {
-    const statusCode = (error as { statusCode?: number })?.statusCode
+    const statusCode = extractErrorStatusCode(error)
     // NOTE: 403 is an access-control denial and must keep the session; only 401 means the
     // session itself is gone and logging out is correct.
     if (statusCode === 401) {

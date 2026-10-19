@@ -1,29 +1,25 @@
-// Types sourced from the api workspace's generated payload-types.ts via the typed Eden facade.
+// Domain and entity types derived from the OpenAPI specification schema.d.ts.
+import type { components, operations } from '@/api/schema'
 
-export type { Post as PayloadPost, User as PayloadUser } from 'payload-elysia-api/payload-types'
+export type PayloadUser = components['schemas']['User']
+export type PayloadPost = components['schemas']['Post']
 
-import type { Post as PayloadPostType } from 'payload-elysia-api/payload-types'
+export type PayloadPostStatus = NonNullable<PayloadPost['status']>
 
-export type PayloadPostStatus = NonNullable<PayloadPostType['status']>
+export type PayloadPostsStats = NonNullable<
+  operations['getPostsStats']['responses'][200]['content']['application/json']['data']
+>
 
-// NOTE: Mirrors PostsStatsResult returned by GET /api/posts/stats ({ success: true, data: {...} }).
-export interface PayloadPostsStats {
-  totalPosts: number
-  byStatus: {
-    published: number
-    draft: number
-    [status: string]: number
-  }
-  metrics: {
-    publishedPercentage: number
-  }
-  latestPost: {
-    id: string
-    title: string
-    slug: string
-    status: string
-    publishedAt: string | null
-  } | null
+export interface PayloadListResponse<TItem> {
+  docs: TItem[]
+  totalDocs: number
+  page: number
+  limit: number
+  totalPages: number
+  hasPrevPage?: boolean
+  hasNextPage?: boolean
+  prevPage?: number | null
+  nextPage?: number | null
 }
 
 /** Shape of a serialized lexical editor state passed through the Payload richText field. */

@@ -1,9 +1,6 @@
-import {
-  handleGetPostsStatsEndpoint,
-  postsStatsOpenApiDocumentation,
-} from '@/handlers/postsStatsHandler'
-import type { CustomCollectionConfig } from '@/utils/endpointAuthUtils'
-import { validatePostSlugField, validatePostTitleField } from '@/validations/postsValidation'
+import { postsStatsPayloadEndpoint } from '../handlers/posts'
+import type { CustomCollectionConfig } from '../utils/endpointAuthUtils'
+import { validatePostSlugField, validatePostTitleField } from '../validations/postsValidation'
 
 export const Posts: CustomCollectionConfig = {
   slug: 'posts',
@@ -18,17 +15,7 @@ export const Posts: CustomCollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', 'status', 'createdAt'],
   },
-  endpoints: [
-    {
-      path: '/stats',
-      method: 'get',
-      authenticated: true,
-      custom: {
-        openapi: postsStatsOpenApiDocumentation,
-      },
-      handler: handleGetPostsStatsEndpoint,
-    },
-  ],
+  endpoints: [postsStatsPayloadEndpoint],
   fields: [
     {
       name: 'title',

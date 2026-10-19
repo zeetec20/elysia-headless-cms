@@ -1,19 +1,19 @@
 import type { AccessControlProvider } from '@refinedev/core'
-import type { PayloadMeResponse } from 'payload-elysia-api/server'
-import { payloadApi } from '@/api/edenClient'
+import type { PayloadUser } from '@/types'
+import { apiClient } from '../restClient'
 
 // NOTE: Single-flight promise cache for the browser session lifetime; login/logout invalidates
 // it. A failed or anonymous /me probe resolves null so access decisions deny instead of throwing.
-let cachedIdentityPromise: Promise<PayloadMeResponse['user']> | undefined
+let cachedIdentityPromise: Promise<PayloadUser | null> | undefined
 
 export const invalidateIdentityCache = (): void => {
   cachedIdentityPromise = undefined
 }
 
-const getCachedIdentity = (): Promise<PayloadMeResponse['user']> => {
-  cachedIdentityPromise ??= payloadApi.users.me
-    .get()
-    .then((result) => result.data?.user ?? null)
+const getCachedIdentity = (): Promise<PayloadUser | null> => {
+  cachedIdentityPromise ??= apiClient
+    .GET('/api/users/me', {})
+    .then((result) => (result.data?.user as PayloadUser | undefined) ?? null)
     .catch(() => null)
   return cachedIdentityPromise
 }

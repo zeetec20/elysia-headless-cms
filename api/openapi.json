@@ -1,0 +1,5159 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Payload CMS REST API",
+    "version": "1.0.0",
+    "description": "Auto-generated OpenAPI specification for collections and auth endpoints"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "paths": {
+    "/api/users": {
+      "get": {
+        "operationId": "listUsers",
+        "summary": "Retrieve a list of Users",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fallback-locale",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "updatedAt",
+                "-updatedAt",
+                "createdAt",
+                "-createdAt",
+                "apiKey",
+                "-apiKey",
+                "apiKeyIndex",
+                "-apiKeyIndex",
+                "email",
+                "-email",
+                "resetPasswordToken",
+                "-resetPasswordToken",
+                "resetPasswordExpiration",
+                "-resetPasswordExpiration",
+                "salt",
+                "-salt",
+                "hash",
+                "-hash",
+                "resetPasswordRequestedAt",
+                "-resetPasswordRequestedAt",
+                "loginAttempts",
+                "-loginAttempts",
+                "lockUntil",
+                "-lockUntil"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "where",
+            "style": "deepObject",
+            "schema": {
+              "allOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/UserQueryOperations"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UserQueryOperationsAnd"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UserQueryOperationsOr"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UserListResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createUser",
+        "summary": "Create a new User",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/UserRequestBody"
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/MutateUserResponse"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/users/{id}": {
+      "parameters": [
+        {
+          "in": "query",
+          "name": "depth",
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "in": "query",
+          "name": "locale",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "query",
+          "name": "fallback-locale",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "path",
+          "name": "id",
+          "description": "ID of the User",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "findUserById",
+        "summary": "Find a User by ID",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/MutateUserResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateUser",
+        "summary": "Update a User",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/UserPatchRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UserResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/UserNotFoundResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteUser",
+        "summary": "Delete a User",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UserResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/UserNotFoundResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/posts": {
+      "get": {
+        "operationId": "listPosts",
+        "summary": "Retrieve a list of Posts",
+        "tags": [
+          "Posts"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fallback-locale",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "title",
+                "-title",
+                "slug",
+                "-slug",
+                "publishedAt",
+                "-publishedAt",
+                "updatedAt",
+                "-updatedAt",
+                "createdAt",
+                "-createdAt"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "where",
+            "style": "deepObject",
+            "schema": {
+              "allOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/PostQueryOperations"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PostQueryOperationsAnd"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PostQueryOperationsOr"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PostListResponse"
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "operationId": "createPost",
+        "summary": "Create a new Post",
+        "tags": [
+          "Posts"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostRequestBody"
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/MutatePostResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/posts/{id}": {
+      "parameters": [
+        {
+          "in": "query",
+          "name": "depth",
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "in": "query",
+          "name": "locale",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "query",
+          "name": "fallback-locale",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "path",
+          "name": "id",
+          "description": "ID of the Post",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "findPostById",
+        "summary": "Find a Post by ID",
+        "tags": [
+          "Posts"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/MutatePostResponse"
+          }
+        },
+        "security": []
+      },
+      "patch": {
+        "operationId": "updatePost",
+        "summary": "Update a Post",
+        "tags": [
+          "Posts"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostPatchRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PostResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/PostNotFoundResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deletePost",
+        "summary": "Delete a Post",
+        "tags": [
+          "Posts"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PostResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/PostNotFoundResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/payload-kv": {
+      "get": {
+        "operationId": "listPayloadKvs",
+        "summary": "Retrieve a list of Payload Kvs",
+        "tags": [
+          "Payload Kvs"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fallback-locale",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "key",
+                "-key"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "where",
+            "style": "deepObject",
+            "schema": {
+              "allOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/PayloadKvQueryOperations"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PayloadKvQueryOperationsAnd"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PayloadKvQueryOperationsOr"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PayloadKvListResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createPayloadKv",
+        "summary": "Create a new Payload Kv",
+        "tags": [
+          "Payload Kvs"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PayloadKvRequestBody"
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/MutatePayloadKvResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/payload-kv/{id}": {
+      "parameters": [
+        {
+          "in": "query",
+          "name": "depth",
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "in": "query",
+          "name": "locale",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "query",
+          "name": "fallback-locale",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "path",
+          "name": "id",
+          "description": "ID of the Payload Kv",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "findPayloadKvById",
+        "summary": "Find a Payload Kv by ID",
+        "tags": [
+          "Payload Kvs"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/MutatePayloadKvResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updatePayloadKv",
+        "summary": "Update a Payload Kv",
+        "tags": [
+          "Payload Kvs"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PayloadKvPatchRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PayloadKvResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/PayloadKvNotFoundResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deletePayloadKv",
+        "summary": "Delete a Payload Kv",
+        "tags": [
+          "Payload Kvs"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PayloadKvResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/PayloadKvNotFoundResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/payload-locked-documents": {
+      "get": {
+        "operationId": "listPayloadLockedDocuments",
+        "summary": "Retrieve a list of Payload Locked Documents",
+        "tags": [
+          "Payload Locked Documents"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fallback-locale",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "globalSlug",
+                "-globalSlug",
+                "updatedAt",
+                "-updatedAt",
+                "createdAt",
+                "-createdAt"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "where",
+            "style": "deepObject",
+            "schema": {
+              "allOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/PayloadLockedDocumentQueryOperations"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PayloadLockedDocumentQueryOperationsAnd"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PayloadLockedDocumentQueryOperationsOr"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PayloadLockedDocumentListResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createPayloadLockedDocument",
+        "summary": "Create a new Payload Locked Document",
+        "tags": [
+          "Payload Locked Documents"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PayloadLockedDocumentRequestBody"
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/MutatePayloadLockedDocumentResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/payload-locked-documents/{id}": {
+      "parameters": [
+        {
+          "in": "query",
+          "name": "depth",
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "in": "query",
+          "name": "locale",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "query",
+          "name": "fallback-locale",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "path",
+          "name": "id",
+          "description": "ID of the Payload Locked Document",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "findPayloadLockedDocumentById",
+        "summary": "Find a Payload Locked Document by ID",
+        "tags": [
+          "Payload Locked Documents"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/MutatePayloadLockedDocumentResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updatePayloadLockedDocument",
+        "summary": "Update a Payload Locked Document",
+        "tags": [
+          "Payload Locked Documents"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PayloadLockedDocumentPatchRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PayloadLockedDocumentResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/PayloadLockedDocumentNotFoundResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deletePayloadLockedDocument",
+        "summary": "Delete a Payload Locked Document",
+        "tags": [
+          "Payload Locked Documents"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PayloadLockedDocumentResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/PayloadLockedDocumentNotFoundResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/payload-preferences": {
+      "get": {
+        "operationId": "listPayloadPreferences",
+        "summary": "Retrieve a list of Payload Preferences",
+        "tags": [
+          "Payload Preferences"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fallback-locale",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "key",
+                "-key",
+                "updatedAt",
+                "-updatedAt",
+                "createdAt",
+                "-createdAt"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "where",
+            "style": "deepObject",
+            "schema": {
+              "allOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/PayloadPreferenceQueryOperations"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PayloadPreferenceQueryOperationsAnd"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PayloadPreferenceQueryOperationsOr"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PayloadPreferenceListResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createPayloadPreference",
+        "summary": "Create a new Payload Preference",
+        "tags": [
+          "Payload Preferences"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PayloadPreferenceRequestBody"
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/MutatePayloadPreferenceResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/payload-preferences/{id}": {
+      "parameters": [
+        {
+          "in": "query",
+          "name": "depth",
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "in": "query",
+          "name": "locale",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "query",
+          "name": "fallback-locale",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "path",
+          "name": "id",
+          "description": "ID of the Payload Preference",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "findPayloadPreferenceById",
+        "summary": "Find a Payload Preference by ID",
+        "tags": [
+          "Payload Preferences"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/MutatePayloadPreferenceResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updatePayloadPreference",
+        "summary": "Update a Payload Preference",
+        "tags": [
+          "Payload Preferences"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PayloadPreferencePatchRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PayloadPreferenceResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/PayloadPreferenceNotFoundResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deletePayloadPreference",
+        "summary": "Delete a Payload Preference",
+        "tags": [
+          "Payload Preferences"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PayloadPreferenceResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/PayloadPreferenceNotFoundResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/payload-migrations": {
+      "get": {
+        "operationId": "listPayloadMigrations",
+        "summary": "Retrieve a list of Payload Migrations",
+        "tags": [
+          "Payload Migrations"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fallback-locale",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "-name",
+                "batch",
+                "-batch",
+                "updatedAt",
+                "-updatedAt",
+                "createdAt",
+                "-createdAt"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "where",
+            "style": "deepObject",
+            "schema": {
+              "allOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/PayloadMigrationQueryOperations"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PayloadMigrationQueryOperationsAnd"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PayloadMigrationQueryOperationsOr"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PayloadMigrationListResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createPayloadMigration",
+        "summary": "Create a new Payload Migration",
+        "tags": [
+          "Payload Migrations"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "depth",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PayloadMigrationRequestBody"
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/MutatePayloadMigrationResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/payload-migrations/{id}": {
+      "parameters": [
+        {
+          "in": "query",
+          "name": "depth",
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "in": "query",
+          "name": "locale",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "query",
+          "name": "fallback-locale",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "in": "path",
+          "name": "id",
+          "description": "ID of the Payload Migration",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "findPayloadMigrationById",
+        "summary": "Find a Payload Migration by ID",
+        "tags": [
+          "Payload Migrations"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/MutatePayloadMigrationResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updatePayloadMigration",
+        "summary": "Update a Payload Migration",
+        "tags": [
+          "Payload Migrations"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PayloadMigrationPatchRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PayloadMigrationResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/PayloadMigrationNotFoundResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deletePayloadMigration",
+        "summary": "Delete a Payload Migration",
+        "tags": [
+          "Payload Migrations"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PayloadMigrationResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/PayloadMigrationNotFoundResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/users/login": {
+      "post": {
+        "operationId": "loginUser",
+        "summary": "Log in as a User",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/UserLoginRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UserLoginResponse"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/users/forgot-password": {
+      "post": {
+        "operationId": "forgotPasswordUser",
+        "summary": "Send a password reset token to a User",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/UserForgotPasswordRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AuthMessageResponse"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/users/reset-password": {
+      "post": {
+        "operationId": "resetPasswordUser",
+        "summary": "Reset the password of a User",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/UserResetPasswordRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UserResetPasswordResponse"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/users/first-register": {
+      "post": {
+        "operationId": "firstRegisterUser",
+        "summary": "Create the first User",
+        "description": "Only succeeds while no Users exist.",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/UserRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UserLoginResponse"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/users/unlock": {
+      "post": {
+        "operationId": "unlockUser",
+        "summary": "Unlock a locked out User",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/UserUnlockRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AuthMessageResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/users/logout": {
+      "post": {
+        "operationId": "logoutUser",
+        "summary": "Log out the current User",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AuthMessageResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/users/me": {
+      "get": {
+        "operationId": "meUser",
+        "summary": "Retrieve the currently authenticated User",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UserMeResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/users/refresh-token": {
+      "post": {
+        "operationId": "refreshTokenUser",
+        "summary": "Refresh the token of the current User",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UserRefreshTokenResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/users/init": {
+      "get": {
+        "operationId": "initUser",
+        "summary": "Check whether any Users exist",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AuthInitResponse"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/access": {
+      "get": {
+        "operationId": "access",
+        "summary": "Retrieve the permissions of the authenticated user",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AuthAccessResponse"
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/posts/stats": {
+      "get": {
+        "tags": [
+          "posts"
+        ],
+        "operationId": "getPostsStats",
+        "summary": "Retrieve post statistics",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "description": "Directly queries PostgreSQL using Drizzle ORM to calculate total posts, status counts, and latest post metadata.",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "totalPosts": {
+                          "type": "integer"
+                        },
+                        "byStatus": {
+                          "type": "object",
+                          "properties": {
+                            "published": {
+                              "type": "integer"
+                            },
+                            "draft": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "metrics": {
+                          "type": "object",
+                          "properties": {
+                            "publishedPercentage": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        "latestPost": {
+                          "type": "object",
+                          "nullable": true,
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "title": {
+                              "type": "string"
+                            },
+                            "slug": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "string"
+                            },
+                            "publishedAt": {
+                              "type": "string",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Valid API key required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "operationId": "getCustomHealth",
+        "summary": "Check system health",
+        "security": [],
+        "description": "Verifies service availability and system uptime.",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "healthy"
+                        },
+                        "uptime": {
+                          "type": "number",
+                          "example": 12.34
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "uptime",
+                        "timestamp"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "API key authorization (e.g. \"users API-Key <api-key>\" or \"Bearer <token>\")"
+      }
+    },
+    "schemas": {
+      "supportedTimezones": {
+        "type": "string",
+        "example": "Europe/Prague"
+      },
+      "User": {
+        "type": "object",
+        "additionalProperties": false,
+        "title": "User",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "superadmin",
+              "guest"
+            ]
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "enableAPIKey": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "apiKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasAPIKey": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "email": {
+            "type": "string"
+          },
+          "sessions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "expiresAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "expiresAt"
+              ]
+            },
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          },
+          "collection": {
+            "type": "string",
+            "enum": [
+              "users"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "updatedAt",
+          "createdAt",
+          "email",
+          "collection"
+        ]
+      },
+      "Post": {
+        "type": "object",
+        "additionalProperties": false,
+        "title": "Post",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "content": {
+            "type": "object",
+            "properties": {
+              "root": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "children": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "x-tsType": "any"
+                        },
+                        "version": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "version"
+                      ]
+                    }
+                  },
+                  "direction": {
+                    "oneOf": [
+                      {
+                        "enum": [
+                          "ltr",
+                          "rtl"
+                        ],
+                        "nullable": true
+                      }
+                    ]
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "start",
+                      "center",
+                      "right",
+                      "end",
+                      "justify",
+                      ""
+                    ]
+                  },
+                  "indent": {
+                    "type": "integer"
+                  },
+                  "version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "children",
+                  "direction",
+                  "format",
+                  "indent",
+                  "type",
+                  "version"
+                ]
+              }
+            },
+            "required": [
+              "root"
+            ],
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published"
+            ],
+            "nullable": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "updatedAt",
+          "createdAt"
+        ]
+      },
+      "PayloadKv": {
+        "type": "object",
+        "additionalProperties": false,
+        "title": "Payload Kv",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "data": {
+            "nullable": true,
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "key",
+          "data"
+        ]
+      },
+      "PayloadLockedDocument": {
+        "type": "object",
+        "additionalProperties": false,
+        "title": "Payload Locked Document",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "document": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "relationTo": {
+                    "enum": [
+                      "users"
+                    ]
+                  },
+                  "value": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "relationTo"
+                ],
+                "nullable": true
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "relationTo": {
+                    "enum": [
+                      "posts"
+                    ]
+                  },
+                  "value": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "$ref": "#/components/schemas/Post"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "relationTo"
+                ],
+                "nullable": true
+              }
+            ]
+          },
+          "globalSlug": {
+            "type": "string",
+            "nullable": true
+          },
+          "user": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "relationTo": {
+                    "enum": [
+                      "users"
+                    ]
+                  },
+                  "value": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "relationTo"
+                ]
+              }
+            ]
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "user",
+          "updatedAt",
+          "createdAt"
+        ]
+      },
+      "PayloadPreference": {
+        "type": "object",
+        "additionalProperties": false,
+        "title": "Payload Preference",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "user": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "relationTo": {
+                    "enum": [
+                      "users"
+                    ]
+                  },
+                  "value": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "relationTo"
+                ]
+              }
+            ]
+          },
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "nullable": true,
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "user",
+          "updatedAt",
+          "createdAt"
+        ]
+      },
+      "PayloadMigration": {
+        "type": "object",
+        "additionalProperties": false,
+        "title": "Payload Migration",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "batch": {
+            "type": "number",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "updatedAt",
+          "createdAt"
+        ]
+      },
+      "UserQueryOperations": {
+        "title": "User query operations",
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "enum": [
+                  "superadmin",
+                  "guest"
+                ]
+              },
+              "not_equals": {
+                "type": "string",
+                "enum": [
+                  "superadmin",
+                  "guest"
+                ]
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              }
+            }
+          },
+          "updatedAt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "createdAt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "enableAPIKey": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "boolean"
+              },
+              "not_equals": {
+                "type": "boolean"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              }
+            }
+          },
+          "apiKey": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string"
+              },
+              "not_equals": {
+                "type": "string"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "like": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            }
+          },
+          "apiKeyIndex": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string"
+              },
+              "not_equals": {
+                "type": "string"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "like": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            }
+          },
+          "hasAPIKey": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "boolean"
+              },
+              "not_equals": {
+                "type": "boolean"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              }
+            }
+          },
+          "email": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "email"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "email"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string",
+                "format": "email"
+              }
+            }
+          },
+          "resetPasswordToken": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string"
+              },
+              "not_equals": {
+                "type": "string"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "like": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            }
+          },
+          "resetPasswordExpiration": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "salt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string"
+              },
+              "not_equals": {
+                "type": "string"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "like": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            }
+          },
+          "hash": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string"
+              },
+              "not_equals": {
+                "type": "string"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "like": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            }
+          },
+          "resetPasswordRequestedAt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "loginAttempts": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "number"
+              },
+              "not_equals": {
+                "type": "number"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "number"
+              },
+              "greater_than_equal": {
+                "type": "number"
+              },
+              "less_than": {
+                "type": "number"
+              },
+              "less_than_equal": {
+                "type": "number"
+              }
+            }
+          },
+          "lockUntil": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "UserQueryOperationsAnd": {
+        "title": "User query conjunction",
+        "type": "object",
+        "properties": {
+          "and": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/UserQueryOperations"
+                },
+                {
+                  "$ref": "#/components/schemas/UserQueryOperationsAnd"
+                },
+                {
+                  "$ref": "#/components/schemas/UserQueryOperationsOr"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "and"
+        ]
+      },
+      "UserQueryOperationsOr": {
+        "title": "User query disjunction",
+        "type": "object",
+        "properties": {
+          "or": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/UserQueryOperations"
+                },
+                {
+                  "$ref": "#/components/schemas/UserQueryOperationsAnd"
+                },
+                {
+                  "$ref": "#/components/schemas/UserQueryOperationsOr"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "or"
+        ]
+      },
+      "PostQueryOperations": {
+        "title": "Post query operations",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string"
+              },
+              "not_equals": {
+                "type": "string"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "like": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            }
+          },
+          "slug": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string"
+              },
+              "not_equals": {
+                "type": "string"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "like": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            }
+          },
+          "status": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "published"
+                ]
+              },
+              "not_equals": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "published"
+                ]
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              }
+            }
+          },
+          "publishedAt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "updatedAt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "createdAt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "PostQueryOperationsAnd": {
+        "title": "Post query conjunction",
+        "type": "object",
+        "properties": {
+          "and": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PostQueryOperations"
+                },
+                {
+                  "$ref": "#/components/schemas/PostQueryOperationsAnd"
+                },
+                {
+                  "$ref": "#/components/schemas/PostQueryOperationsOr"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "and"
+        ]
+      },
+      "PostQueryOperationsOr": {
+        "title": "Post query disjunction",
+        "type": "object",
+        "properties": {
+          "or": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PostQueryOperations"
+                },
+                {
+                  "$ref": "#/components/schemas/PostQueryOperationsAnd"
+                },
+                {
+                  "$ref": "#/components/schemas/PostQueryOperationsOr"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "or"
+        ]
+      },
+      "PayloadKvQueryOperations": {
+        "title": "Payload Kv query operations",
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string"
+              },
+              "not_equals": {
+                "type": "string"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "like": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "PayloadKvQueryOperationsAnd": {
+        "title": "Payload Kv query conjunction",
+        "type": "object",
+        "properties": {
+          "and": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PayloadKvQueryOperations"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadKvQueryOperationsAnd"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadKvQueryOperationsOr"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "and"
+        ]
+      },
+      "PayloadKvQueryOperationsOr": {
+        "title": "Payload Kv query disjunction",
+        "type": "object",
+        "properties": {
+          "or": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PayloadKvQueryOperations"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadKvQueryOperationsAnd"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadKvQueryOperationsOr"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "or"
+        ]
+      },
+      "PayloadLockedDocumentQueryOperations": {
+        "title": "Payload Locked Document query operations",
+        "type": "object",
+        "properties": {
+          "globalSlug": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string"
+              },
+              "not_equals": {
+                "type": "string"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "like": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            }
+          },
+          "updatedAt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "createdAt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "PayloadLockedDocumentQueryOperationsAnd": {
+        "title": "Payload Locked Document query conjunction",
+        "type": "object",
+        "properties": {
+          "and": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PayloadLockedDocumentQueryOperations"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadLockedDocumentQueryOperationsAnd"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadLockedDocumentQueryOperationsOr"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "and"
+        ]
+      },
+      "PayloadLockedDocumentQueryOperationsOr": {
+        "title": "Payload Locked Document query disjunction",
+        "type": "object",
+        "properties": {
+          "or": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PayloadLockedDocumentQueryOperations"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadLockedDocumentQueryOperationsAnd"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadLockedDocumentQueryOperationsOr"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "or"
+        ]
+      },
+      "PayloadPreferenceQueryOperations": {
+        "title": "Payload Preference query operations",
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string"
+              },
+              "not_equals": {
+                "type": "string"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "like": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            }
+          },
+          "updatedAt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "createdAt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "PayloadPreferenceQueryOperationsAnd": {
+        "title": "Payload Preference query conjunction",
+        "type": "object",
+        "properties": {
+          "and": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PayloadPreferenceQueryOperations"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadPreferenceQueryOperationsAnd"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadPreferenceQueryOperationsOr"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "and"
+        ]
+      },
+      "PayloadPreferenceQueryOperationsOr": {
+        "title": "Payload Preference query disjunction",
+        "type": "object",
+        "properties": {
+          "or": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PayloadPreferenceQueryOperations"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadPreferenceQueryOperationsAnd"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadPreferenceQueryOperationsOr"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "or"
+        ]
+      },
+      "PayloadMigrationQueryOperations": {
+        "title": "Payload Migration query operations",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string"
+              },
+              "not_equals": {
+                "type": "string"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "like": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            }
+          },
+          "batch": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "number"
+              },
+              "not_equals": {
+                "type": "number"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "number"
+              },
+              "greater_than_equal": {
+                "type": "number"
+              },
+              "less_than": {
+                "type": "number"
+              },
+              "less_than_equal": {
+                "type": "number"
+              }
+            }
+          },
+          "updatedAt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "createdAt": {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "not_equals": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "string"
+              },
+              "not_in": {
+                "type": "string"
+              },
+              "greater_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "greater_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "less_than_equal": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "PayloadMigrationQueryOperationsAnd": {
+        "title": "Payload Migration query conjunction",
+        "type": "object",
+        "properties": {
+          "and": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PayloadMigrationQueryOperations"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadMigrationQueryOperationsAnd"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadMigrationQueryOperationsOr"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "and"
+        ]
+      },
+      "PayloadMigrationQueryOperationsOr": {
+        "title": "Payload Migration query disjunction",
+        "type": "object",
+        "properties": {
+          "or": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PayloadMigrationQueryOperations"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadMigrationQueryOperationsAnd"
+                },
+                {
+                  "$ref": "#/components/schemas/PayloadMigrationQueryOperationsOr"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "or"
+        ]
+      },
+      "AuthMessage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "AuthInit": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "initialized": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "initialized"
+        ]
+      },
+      "AuthAccess": {
+        "type": "object",
+        "description": "Resolved permissions for the authenticated user, keyed by collection and global"
+      },
+      "UserLogin": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "exp": {
+            "type": "number"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "user"
+        ]
+      },
+      "UserMe": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "collection": {
+            "type": "string"
+          },
+          "exp": {
+            "type": "number"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "UserRefreshToken": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "exp": {
+            "type": "number"
+          },
+          "refreshedToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "user",
+          "exp"
+        ]
+      },
+      "UserResetPassword": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "user"
+        ]
+      }
+    },
+    "requestBodies": {
+      "UserRequestBody": {
+        "description": "User",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "User",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "superadmin",
+                    "guest"
+                  ]
+                },
+                "enableAPIKey": {
+                  "type": "boolean",
+                  "nullable": true
+                },
+                "apiKey": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "hasAPIKey": {
+                  "type": "boolean",
+                  "nullable": true
+                },
+                "email": {
+                  "type": "string"
+                },
+                "sessions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "expiresAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "expiresAt"
+                    ]
+                  },
+                  "nullable": true
+                },
+                "password": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "collection": {
+                  "type": "string",
+                  "enum": [
+                    "users"
+                  ]
+                }
+              },
+              "required": [
+                "role",
+                "email",
+                "collection"
+              ]
+            }
+          }
+        }
+      },
+      "UserPatchRequestBody": {
+        "description": "User",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "User",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "superadmin",
+                    "guest"
+                  ]
+                },
+                "enableAPIKey": {
+                  "type": "boolean",
+                  "nullable": true
+                },
+                "apiKey": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "hasAPIKey": {
+                  "type": "boolean",
+                  "nullable": true
+                },
+                "email": {
+                  "type": "string"
+                },
+                "sessions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "expiresAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "expiresAt"
+                    ]
+                  },
+                  "nullable": true
+                },
+                "password": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "collection": {
+                  "type": "string",
+                  "enum": [
+                    "users"
+                  ]
+                }
+              },
+              "required": []
+            }
+          }
+        }
+      },
+      "PostRequestBody": {
+        "description": "Post",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "Post",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "object",
+                  "properties": {
+                    "root": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "children": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "x-tsType": "any"
+                              },
+                              "version": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "version"
+                            ]
+                          }
+                        },
+                        "direction": {
+                          "oneOf": [
+                            {
+                              "enum": [
+                                "ltr",
+                                "rtl"
+                              ],
+                              "nullable": true
+                            }
+                          ]
+                        },
+                        "format": {
+                          "type": "string",
+                          "enum": [
+                            "left",
+                            "start",
+                            "center",
+                            "right",
+                            "end",
+                            "justify",
+                            ""
+                          ]
+                        },
+                        "indent": {
+                          "type": "integer"
+                        },
+                        "version": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "children",
+                        "direction",
+                        "format",
+                        "indent",
+                        "type",
+                        "version"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "root"
+                  ],
+                  "nullable": true
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "published"
+                  ],
+                  "nullable": true
+                },
+                "publishedAt": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "title",
+                "slug"
+              ]
+            }
+          }
+        }
+      },
+      "PostPatchRequestBody": {
+        "description": "Post",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "Post",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "object",
+                  "properties": {
+                    "root": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "children": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "x-tsType": "any"
+                              },
+                              "version": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "version"
+                            ]
+                          }
+                        },
+                        "direction": {
+                          "oneOf": [
+                            {
+                              "enum": [
+                                "ltr",
+                                "rtl"
+                              ],
+                              "nullable": true
+                            }
+                          ]
+                        },
+                        "format": {
+                          "type": "string",
+                          "enum": [
+                            "left",
+                            "start",
+                            "center",
+                            "right",
+                            "end",
+                            "justify",
+                            ""
+                          ]
+                        },
+                        "indent": {
+                          "type": "integer"
+                        },
+                        "version": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "children",
+                        "direction",
+                        "format",
+                        "indent",
+                        "type",
+                        "version"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "root"
+                  ],
+                  "nullable": true
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "published"
+                  ],
+                  "nullable": true
+                },
+                "publishedAt": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "required": []
+            }
+          }
+        }
+      },
+      "PayloadKvRequestBody": {
+        "description": "Payload Kv",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "PayloadKv",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "data": {
+                  "nullable": true,
+                  "anyOf": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "type": "array",
+                      "items": {}
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "key",
+                "data"
+              ]
+            }
+          }
+        }
+      },
+      "PayloadKvPatchRequestBody": {
+        "description": "Payload Kv",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "PayloadKv",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "data": {
+                  "nullable": true,
+                  "anyOf": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "type": "array",
+                      "items": {}
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                }
+              },
+              "required": []
+            }
+          }
+        }
+      },
+      "PayloadLockedDocumentRequestBody": {
+        "description": "Payload Locked Document",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "PayloadLockedDocument",
+              "properties": {
+                "document": {
+                  "type": "string",
+                  "description": "ID of the users/posts"
+                },
+                "globalSlug": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "user": {
+                  "type": "string",
+                  "description": "ID of the users"
+                }
+              },
+              "required": [
+                "user"
+              ]
+            }
+          }
+        }
+      },
+      "PayloadLockedDocumentPatchRequestBody": {
+        "description": "Payload Locked Document",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "PayloadLockedDocument",
+              "properties": {
+                "document": {
+                  "type": "string",
+                  "description": "ID of the users/posts"
+                },
+                "globalSlug": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "user": {
+                  "type": "string",
+                  "description": "ID of the users"
+                }
+              },
+              "required": []
+            }
+          }
+        }
+      },
+      "PayloadPreferenceRequestBody": {
+        "description": "Payload Preference",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "PayloadPreference",
+              "properties": {
+                "user": {
+                  "type": "string",
+                  "description": "ID of the users"
+                },
+                "key": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "value": {
+                  "nullable": true,
+                  "anyOf": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "type": "array",
+                      "items": {}
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "user"
+              ]
+            }
+          }
+        }
+      },
+      "PayloadPreferencePatchRequestBody": {
+        "description": "Payload Preference",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "PayloadPreference",
+              "properties": {
+                "user": {
+                  "type": "string",
+                  "description": "ID of the users"
+                },
+                "key": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "value": {
+                  "nullable": true,
+                  "anyOf": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "type": "array",
+                      "items": {}
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                }
+              },
+              "required": []
+            }
+          }
+        }
+      },
+      "PayloadMigrationRequestBody": {
+        "description": "Payload Migration",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "PayloadMigration",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "batch": {
+                  "type": "number",
+                  "nullable": true
+                }
+              },
+              "required": []
+            }
+          }
+        }
+      },
+      "PayloadMigrationPatchRequestBody": {
+        "description": "Payload Migration",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "title": "PayloadMigration",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "batch": {
+                  "type": "number",
+                  "nullable": true
+                }
+              },
+              "required": []
+            }
+          }
+        }
+      },
+      "UserLoginRequestBody": {
+        "description": "Credentials of the User to log in",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "email"
+                },
+                "password": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "email",
+                "password"
+              ]
+            }
+          }
+        }
+      },
+      "UserForgotPasswordRequestBody": {
+        "description": "Identifier of the User to send a reset token to",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "email"
+                }
+              },
+              "required": [
+                "email"
+              ]
+            }
+          }
+        }
+      },
+      "UserResetPasswordRequestBody": {
+        "description": "Reset token and new password for the User",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "token": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "token",
+                "password"
+              ]
+            }
+          }
+        }
+      },
+      "UserUnlockRequestBody": {
+        "description": "Identifier of the User to unlock",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "email"
+                }
+              },
+              "required": [
+                "email"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "UserResponse": {
+        "description": "User object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/User"
+            }
+          }
+        }
+      },
+      "MutateUserResponse": {
+        "description": "User object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "doc": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/User"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "createdAt",
+                        "updatedAt"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "message",
+                "doc"
+              ]
+            }
+          }
+        }
+      },
+      "UserNotFoundResponse": {
+        "description": "User not found"
+      },
+      "UserListResponse": {
+        "description": "List of Users",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "docs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                },
+                "totalDocs": {
+                  "type": "integer"
+                },
+                "limit": {
+                  "type": "integer"
+                },
+                "totalPages": {
+                  "type": "integer"
+                },
+                "page": {
+                  "type": "integer"
+                },
+                "pagingCounter": {
+                  "type": "integer"
+                },
+                "hasPrevPage": {
+                  "type": "boolean"
+                },
+                "hasNextPage": {
+                  "type": "boolean"
+                },
+                "prevPage": {
+                  "type": "integer",
+                  "nullable": true
+                },
+                "nextPage": {
+                  "type": "integer",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "docs",
+                "totalDocs",
+                "limit",
+                "totalPages",
+                "page",
+                "pagingCounter",
+                "hasPrevPage",
+                "hasNextPage",
+                "prevPage",
+                "nextPage"
+              ]
+            }
+          }
+        }
+      },
+      "PostResponse": {
+        "description": "Post object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Post"
+            }
+          }
+        }
+      },
+      "MutatePostResponse": {
+        "description": "Post object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "doc": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Post"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "createdAt",
+                        "updatedAt"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "message",
+                "doc"
+              ]
+            }
+          }
+        }
+      },
+      "PostNotFoundResponse": {
+        "description": "Post not found"
+      },
+      "PostListResponse": {
+        "description": "List of Posts",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "docs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Post"
+                  }
+                },
+                "totalDocs": {
+                  "type": "integer"
+                },
+                "limit": {
+                  "type": "integer"
+                },
+                "totalPages": {
+                  "type": "integer"
+                },
+                "page": {
+                  "type": "integer"
+                },
+                "pagingCounter": {
+                  "type": "integer"
+                },
+                "hasPrevPage": {
+                  "type": "boolean"
+                },
+                "hasNextPage": {
+                  "type": "boolean"
+                },
+                "prevPage": {
+                  "type": "integer",
+                  "nullable": true
+                },
+                "nextPage": {
+                  "type": "integer",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "docs",
+                "totalDocs",
+                "limit",
+                "totalPages",
+                "page",
+                "pagingCounter",
+                "hasPrevPage",
+                "hasNextPage",
+                "prevPage",
+                "nextPage"
+              ]
+            }
+          }
+        }
+      },
+      "PayloadKvResponse": {
+        "description": "Payload Kv object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PayloadKv"
+            }
+          }
+        }
+      },
+      "MutatePayloadKvResponse": {
+        "description": "Payload Kv object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "doc": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PayloadKv"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "createdAt",
+                        "updatedAt"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "message",
+                "doc"
+              ]
+            }
+          }
+        }
+      },
+      "PayloadKvNotFoundResponse": {
+        "description": "Payload Kv not found"
+      },
+      "PayloadKvListResponse": {
+        "description": "List of Payload Kvs",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "docs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PayloadKv"
+                  }
+                },
+                "totalDocs": {
+                  "type": "integer"
+                },
+                "limit": {
+                  "type": "integer"
+                },
+                "totalPages": {
+                  "type": "integer"
+                },
+                "page": {
+                  "type": "integer"
+                },
+                "pagingCounter": {
+                  "type": "integer"
+                },
+                "hasPrevPage": {
+                  "type": "boolean"
+                },
+                "hasNextPage": {
+                  "type": "boolean"
+                },
+                "prevPage": {
+                  "type": "integer",
+                  "nullable": true
+                },
+                "nextPage": {
+                  "type": "integer",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "docs",
+                "totalDocs",
+                "limit",
+                "totalPages",
+                "page",
+                "pagingCounter",
+                "hasPrevPage",
+                "hasNextPage",
+                "prevPage",
+                "nextPage"
+              ]
+            }
+          }
+        }
+      },
+      "PayloadLockedDocumentResponse": {
+        "description": "Payload Locked Document object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PayloadLockedDocument"
+            }
+          }
+        }
+      },
+      "MutatePayloadLockedDocumentResponse": {
+        "description": "Payload Locked Document object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "doc": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PayloadLockedDocument"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "createdAt",
+                        "updatedAt"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "message",
+                "doc"
+              ]
+            }
+          }
+        }
+      },
+      "PayloadLockedDocumentNotFoundResponse": {
+        "description": "Payload Locked Document not found"
+      },
+      "PayloadLockedDocumentListResponse": {
+        "description": "List of Payload Locked Documents",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "docs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PayloadLockedDocument"
+                  }
+                },
+                "totalDocs": {
+                  "type": "integer"
+                },
+                "limit": {
+                  "type": "integer"
+                },
+                "totalPages": {
+                  "type": "integer"
+                },
+                "page": {
+                  "type": "integer"
+                },
+                "pagingCounter": {
+                  "type": "integer"
+                },
+                "hasPrevPage": {
+                  "type": "boolean"
+                },
+                "hasNextPage": {
+                  "type": "boolean"
+                },
+                "prevPage": {
+                  "type": "integer",
+                  "nullable": true
+                },
+                "nextPage": {
+                  "type": "integer",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "docs",
+                "totalDocs",
+                "limit",
+                "totalPages",
+                "page",
+                "pagingCounter",
+                "hasPrevPage",
+                "hasNextPage",
+                "prevPage",
+                "nextPage"
+              ]
+            }
+          }
+        }
+      },
+      "PayloadPreferenceResponse": {
+        "description": "Payload Preference object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PayloadPreference"
+            }
+          }
+        }
+      },
+      "MutatePayloadPreferenceResponse": {
+        "description": "Payload Preference object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "doc": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PayloadPreference"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "createdAt",
+                        "updatedAt"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "message",
+                "doc"
+              ]
+            }
+          }
+        }
+      },
+      "PayloadPreferenceNotFoundResponse": {
+        "description": "Payload Preference not found"
+      },
+      "PayloadPreferenceListResponse": {
+        "description": "List of Payload Preferences",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "docs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PayloadPreference"
+                  }
+                },
+                "totalDocs": {
+                  "type": "integer"
+                },
+                "limit": {
+                  "type": "integer"
+                },
+                "totalPages": {
+                  "type": "integer"
+                },
+                "page": {
+                  "type": "integer"
+                },
+                "pagingCounter": {
+                  "type": "integer"
+                },
+                "hasPrevPage": {
+                  "type": "boolean"
+                },
+                "hasNextPage": {
+                  "type": "boolean"
+                },
+                "prevPage": {
+                  "type": "integer",
+                  "nullable": true
+                },
+                "nextPage": {
+                  "type": "integer",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "docs",
+                "totalDocs",
+                "limit",
+                "totalPages",
+                "page",
+                "pagingCounter",
+                "hasPrevPage",
+                "hasNextPage",
+                "prevPage",
+                "nextPage"
+              ]
+            }
+          }
+        }
+      },
+      "PayloadMigrationResponse": {
+        "description": "Payload Migration object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PayloadMigration"
+            }
+          }
+        }
+      },
+      "MutatePayloadMigrationResponse": {
+        "description": "Payload Migration object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "doc": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PayloadMigration"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "createdAt",
+                        "updatedAt"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "message",
+                "doc"
+              ]
+            }
+          }
+        }
+      },
+      "PayloadMigrationNotFoundResponse": {
+        "description": "Payload Migration not found"
+      },
+      "PayloadMigrationListResponse": {
+        "description": "List of Payload Migrations",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "docs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PayloadMigration"
+                  }
+                },
+                "totalDocs": {
+                  "type": "integer"
+                },
+                "limit": {
+                  "type": "integer"
+                },
+                "totalPages": {
+                  "type": "integer"
+                },
+                "page": {
+                  "type": "integer"
+                },
+                "pagingCounter": {
+                  "type": "integer"
+                },
+                "hasPrevPage": {
+                  "type": "boolean"
+                },
+                "hasNextPage": {
+                  "type": "boolean"
+                },
+                "prevPage": {
+                  "type": "integer",
+                  "nullable": true
+                },
+                "nextPage": {
+                  "type": "integer",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "docs",
+                "totalDocs",
+                "limit",
+                "totalPages",
+                "page",
+                "pagingCounter",
+                "hasPrevPage",
+                "hasNextPage",
+                "prevPage",
+                "nextPage"
+              ]
+            }
+          }
+        }
+      },
+      "AuthMessageResponse": {
+        "description": "Operation result message",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AuthMessage"
+            }
+          }
+        }
+      },
+      "AuthInitResponse": {
+        "description": "Whether the collection already has at least one document",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AuthInit"
+            }
+          }
+        }
+      },
+      "AuthAccessResponse": {
+        "description": "Resolved permissions for the authenticated user",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AuthAccess"
+            }
+          }
+        }
+      },
+      "UserLoginResponse": {
+        "description": "The logged in User and its token",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/UserLogin"
+            }
+          }
+        }
+      },
+      "UserMeResponse": {
+        "description": "The currently authenticated User, if any",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/UserMe"
+            }
+          }
+        }
+      },
+      "UserRefreshTokenResponse": {
+        "description": "The User and its refreshed token",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/UserRefreshToken"
+            }
+          }
+        }
+      },
+      "UserResetPasswordResponse": {
+        "description": "The User whose password was reset",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/UserResetPassword"
+            }
+          }
+        }
+      }
+    }
+  }
+}

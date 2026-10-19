@@ -1,0 +1,1 @@
+export { fetchPostsStats } from './postsApi'

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import type { Config, PayloadRequest } from 'payload'
 import { scalar } from 'payload-oapi'
-import { secureOpenApiDocsPlugin } from '@/handlers/openapiDocsSecurity'
+import { secureOpenApiDocsPlugin } from '@/handlers/system'
 
 const createMockScalarPayloadRequest = (
   headersInit: Record<string, string> = {},

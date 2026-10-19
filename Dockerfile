@@ -15,6 +15,9 @@ COPY api/scripts api/scripts
 ENV PORT=3000
 EXPOSE 3000
 
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
+  CMD bun --eval "fetch('http://localhost:3000/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
+
 # NOTE: --conditions=development is mandatory at runtime: payload's published ESM bundles only
 # resolve their internal circular imports via the development conditions under Bun. The bootstrap
 # seed is idempotent: on a fresh database it creates the schema (dev-mode push), the first

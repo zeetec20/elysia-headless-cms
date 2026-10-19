@@ -10,8 +10,7 @@ import routerProvider, { NavigateToResource, UnsavedChangesNotifier } from '@ref
 import { App as AntdApp, ConfigProvider } from 'antd'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router'
 
-import { createPayloadAccessControlProvider } from '@/api/accessControl'
-import { authProvider } from '@/api/authProvider'
+import { authProvider, createPayloadAccessControlProvider } from '@/api/auth'
 import { createPayloadDataProvider } from '@/api/dataProvider'
 import ThemedSiderWithLogout from '@/components/themedSiderWithLogout'
 import DashboardPage from '@/pages/dashboard'

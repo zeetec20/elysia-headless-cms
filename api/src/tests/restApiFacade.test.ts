@@ -2,11 +2,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 
 import { App } from '@/server'
 
-// NOTE: Cookie-based auth is CSRF-guarded inside extract JWT: synthetic browser-like requests
+// NOTE: Cookie-based auth is CSRF-guarded inside extractJWT: synthetic browser-like requests
 // must present an allowlisted Origin for POST/PATCH/DELETE so the payload-token cookie applies.
 const DASHBOARD_ORIGIN = 'http://localhost:5173'
 
-const runTypedRequest = async (path: string, init: RequestInit = {}): Promise<Response> => {
+const runApiRequest = async (path: string, init: RequestInit = {}): Promise<Response> => {
   const request = new Request(`http://localhost:3000${path}`, {
     ...init,
     headers: {
@@ -32,8 +32,8 @@ const extractTokenCookie = (response: Response): string => {
   return `payload-token=${tokenMatch[1]}`
 }
 
-const loginThroughTypedRoute = async (email: string, password: string): Promise<string> => {
-  const response = await runTypedRequest('/api/users/login', {
+const loginThroughApiRoute = async (email: string, password: string): Promise<string> => {
+  const response = await runApiRequest('/api/users/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   })
@@ -41,28 +41,28 @@ const loginThroughTypedRoute = async (email: string, password: string): Promise<
   return extractTokenCookie(response)
 }
 
-describe('Typed Elysia facade over the Payload REST engine', () => {
+describe('Direct REST API engine on Elysia HTTP server', () => {
   let superadminCookie = ''
   let guestCookie = ''
   const createdPostIds: string[] = []
   const createdUserIds: string[] = []
   const runSuffix = Date.now().toString(36)
-  const guestEmail = `guest-facade-${runSuffix}@example.com`
+  const guestEmail = `guest-rest-${runSuffix}@example.com`
 
   beforeAll(async () => {
-    superadminCookie = await loginThroughTypedRoute('admin@example.com', 'password123')
+    superadminCookie = await loginThroughApiRoute('admin@example.com', 'password123')
   })
 
   afterAll(async () => {
     await Promise.all([
       ...createdPostIds.map((postId) =>
-        runTypedRequest(`/api/posts/${postId}`, {
+        runApiRequest(`/api/posts/${postId}`, {
           method: 'DELETE',
           headers: { Cookie: superadminCookie },
         }),
       ),
       ...createdUserIds.map((userId) =>
-        runTypedRequest(`/api/users/${userId}`, {
+        runApiRequest(`/api/users/${userId}`, {
           method: 'DELETE',
           headers: { Cookie: superadminCookie },
         }),
@@ -70,19 +70,16 @@ describe('Typed Elysia facade over the Payload REST engine', () => {
     ])
   })
 
-  it('rejects malformed login bodies with 422 before Payload sees the request', async () => {
-    const response = await runTypedRequest('/api/users/login', {
+  it('rejects invalid login credentials with 400 or 401', async () => {
+    const response = await runApiRequest('/api/users/login', {
       method: 'POST',
-      body: JSON.stringify({ email: true, password: 'password123' }),
+      body: JSON.stringify({ email: 'nonexistent@example.com', password: 'wrongpassword' }),
     })
-    expect(response.status).toBe(422)
-
-    const body = await readJsonBody(response)
-    expect(body.type).toBe('validation')
+    expect([400, 401]).toContain(response.status)
   })
 
-  it('login passthrough returns the Payload session and cookie', async () => {
-    const response = await runTypedRequest('/api/users/login', {
+  it('login route returns the Payload session and cookie', async () => {
+    const response = await runApiRequest('/api/users/login', {
       method: 'POST',
       body: JSON.stringify({ email: 'admin@example.com', password: 'password123' }),
     })
@@ -94,16 +91,28 @@ describe('Typed Elysia facade over the Payload REST engine', () => {
     expect(user.email).toBe('admin@example.com')
   })
 
-  it('me passthrough returns the anonymous null-user contract', async () => {
-    const response = await runTypedRequest('/api/users/me')
+  it('me route returns the anonymous null-user contract', async () => {
+    const response = await runApiRequest('/api/users/me')
     expect(response.status).toBe(200)
 
     const body = await readJsonBody(response)
     expect(body.user).toBeNull()
   })
 
-  it('list passthrough returns the Payload collection response shape', async () => {
-    const response = await runTypedRequest('/api/posts?limit=5&page=1&depth=0')
+  it('me route returns authenticated user when cookie is present', async () => {
+    const response = await runApiRequest('/api/users/me', {
+      headers: { Cookie: superadminCookie },
+    })
+    expect(response.status).toBe(200)
+
+    const body = await readJsonBody(response)
+    const user = body.user as Record<string, unknown>
+    expect(user).toBeDefined()
+    expect(user.email).toBe('admin@example.com')
+  })
+
+  it('list route returns the Payload collection response shape', async () => {
+    const response = await runApiRequest('/api/posts?limit=5&page=1&depth=0')
     expect(response.status).toBe(200)
 
     const body = await readJsonBody(response)
@@ -111,11 +120,11 @@ describe('Typed Elysia facade over the Payload REST engine', () => {
     expect(body.totalDocs).toBeNumber()
   })
 
-  it('stats passthrough gates authentication through the typed route', async () => {
-    const anonymous = await runTypedRequest('/api/posts/stats')
+  it('stats route gates authentication through the custom endpoint', async () => {
+    const anonymous = await runApiRequest('/api/posts/stats')
     expect(anonymous.status).toBe(401)
 
-    const authenticated = await runTypedRequest('/api/posts/stats', {
+    const authenticated = await runApiRequest('/api/posts/stats', {
       headers: { Cookie: superadminCookie },
     })
     expect(authenticated.status).toBe(200)
@@ -124,12 +133,12 @@ describe('Typed Elysia facade over the Payload REST engine', () => {
     expect(body.success).toBe(true)
   })
 
-  it('mutating passthrough rebuilds the body and keeps Payload access control', async () => {
-    const created = await runTypedRequest('/api/posts', {
+  it('mutating routes handle creation and update with Payload access control', async () => {
+    const created = await runApiRequest('/api/posts', {
       method: 'POST',
       body: JSON.stringify({
-        title: `Typed facade post ${Date.now().toString(36)}`,
-        slug: `typed-facade-post-${Date.now().toString(36)}`,
+        title: `REST facade post ${Date.now().toString(36)}`,
+        slug: `rest-facade-post-${Date.now().toString(36)}`,
         status: 'draft',
       }),
       headers: { Cookie: superadminCookie },
@@ -141,44 +150,40 @@ describe('Typed Elysia facade over the Payload REST engine', () => {
     expect(postId).toBeString()
     createdPostIds.push(postId)
 
-    const guestRegister = await runTypedRequest('/api/users', {
+    const guestRegister = await runApiRequest('/api/users', {
       method: 'POST',
       body: JSON.stringify({
         email: guestEmail,
         password: 'guestpass123',
-        // NOTE: Anonymous registration cannot upsert itself into superadmin — the role is
-        // forced back to guest server-side, exactly like the REST suite asserts.
         role: 'superadmin',
       }),
     })
     expect(guestRegister.status).toBe(201)
     const guestRegisterBody = await readJsonBody(guestRegister)
     createdUserIds.push((guestRegisterBody.doc as Record<string, unknown>).id as string)
-    // NOTE: Visitors cannot upsert themselves into superadmin on this route even when the
-    // request is authenticated; public registration forces guest exactly like the REST suite.
     expect((guestRegisterBody.doc as Record<string, unknown>).role).toBe('guest')
 
-    guestCookie = await loginThroughTypedRoute(guestEmail, 'guestpass123')
-    const guestPatch = await runTypedRequest(`/api/posts/${postId}`, {
+    guestCookie = await loginThroughApiRoute(guestEmail, 'guestpass123')
+    const guestPatch = await runApiRequest(`/api/posts/${postId}`, {
       method: 'PATCH',
       body: JSON.stringify({ title: 'Guest takeover attempt' }),
       headers: { Cookie: guestCookie },
     })
     expect(guestPatch.status).toBe(403)
 
-    const adminPatch = await runTypedRequest(`/api/posts/${postId}`, {
+    const adminPatch = await runApiRequest(`/api/posts/${postId}`, {
       method: 'PATCH',
-      body: JSON.stringify({ title: 'Admin rename via facade' }),
+      body: JSON.stringify({ title: 'Admin rename via REST' }),
       headers: { Cookie: superadminCookie },
     })
     expect(adminPatch.status).toBe(200)
     const patchedBody = await readJsonBody(adminPatch)
     const patchedDoc = patchedBody.doc as Record<string, unknown>
-    expect(patchedDoc.title).toBe('Admin rename via facade')
+    expect(patchedDoc.title).toBe('Admin rename via REST')
   })
 
-  it('falls through to the Payload catch-all and reports liveness without a database probe', async () => {
-    const response = await runTypedRequest('/api/health')
+  it('reports health liveness without a database probe', async () => {
+    const response = await runApiRequest('/api/health')
     expect(response.status).toBe(200)
 
     const body = await readJsonBody(response)

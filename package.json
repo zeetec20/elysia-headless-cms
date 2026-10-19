@@ -15,11 +15,15 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "test": "bun --cwd api test",
-    "verify": "bun --cwd api test"
+    "verify": "bun --cwd api test",
+    "generate:openapi": "bun run --cwd api generate:openapi",
+    "generate:api": "bun run --cwd dashboard generate:api",
+    "prepare": "lefthook install"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
     "@types/bun": "latest",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "lefthook": "^1.11.0"
   }
 }

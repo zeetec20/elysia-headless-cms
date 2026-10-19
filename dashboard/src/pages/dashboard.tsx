@@ -1,7 +1,7 @@
 import { Card, Col, Row, Statistic, Tag, Typography } from 'antd'
 import { useEffect, useState } from 'react'
 
-import { fetchPostsStats } from '@/api/statsApi'
+import { fetchPostsStats } from '@/api/posts'
 import type { PayloadPostsStats } from '@/types'
 
 const { Title, Text } = Typography
@@ -30,19 +30,19 @@ const DashboardPage = () => {
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic title="Published" value={stats?.byStatus.published ?? 0} />
+            <Statistic title="Published" value={stats?.byStatus?.published ?? 0} />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic title="Drafts" value={stats?.byStatus.draft ?? 0} />
+            <Statistic title="Drafts" value={stats?.byStatus?.draft ?? 0} />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
               title="Published share"
-              value={stats?.metrics.publishedPercentage ?? 0}
+              value={stats?.metrics?.publishedPercentage ?? 0}
               suffix="%"
             />
           </Card>

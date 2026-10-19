@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import type { Config, PayloadHandler, PayloadRequest } from 'payload'
-import { secureOpenApiDocsPlugin } from '@/handlers/openapiDocsSecurity'
+import { secureOpenApiDocsPlugin } from '@/handlers/system'
 
 describe('OpenAPI Docs Security Plugin', () => {
   const originalEnv = { ...process.env }

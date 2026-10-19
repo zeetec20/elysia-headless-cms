@@ -3,7 +3,7 @@ import type { PayloadRequest } from 'payload'
 import {
   createHealthCheckOpenApiDocumentation,
   handleGetHealthCheckEndpoint,
-} from '@/handlers/healthCheckHandler'
+} from '@/handlers/system'
 
 describe('Healthcheck Endpoint', () => {
   it('generates valid OpenAPI documentation for health check', () => {

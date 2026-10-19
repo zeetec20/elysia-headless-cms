@@ -4,14 +4,10 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
 import { openapi, scalar } from 'payload-oapi'
-import { Posts } from '@/collections/Posts'
-import { Users } from '@/collections/Users'
-import {
-  handleGetHealthCheckEndpoint,
-  healthCheckOpenApiDocumentation,
-} from '@/handlers/healthCheckHandler'
-import { secureOpenApiDocsPlugin } from '@/handlers/openapiDocsSecurity'
-import { endpointAuthMiddlewarePlugin } from '@/utils/endpointAuthUtils'
+import { Posts } from './collections/Posts'
+import { Users } from './collections/Users'
+import { secureOpenApiDocsPlugin, systemHealthPayloadEndpoint } from './handlers/system'
+import { endpointAuthMiddlewarePlugin } from './utils/endpointAuthUtils'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -72,16 +68,7 @@ export default buildConfig({
     secureOpenApiDocsPlugin,
     endpointAuthMiddlewarePlugin,
   ],
-  endpoints: [
-    {
-      path: '/health',
-      method: 'get',
-      custom: {
-        openapi: healthCheckOpenApiDocumentation,
-      },
-      handler: handleGetHealthCheckEndpoint,
-    },
-  ],
+  endpoints: [systemHealthPayloadEndpoint],
   collections: [Users, Posts],
   editor: lexicalEditor(),
   secret:

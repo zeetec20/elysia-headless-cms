@@ -1,5 +1,5 @@
 import type { CollectionBeforeChangeHook } from 'payload'
-import type { CustomCollectionConfig } from '@/utils/endpointAuthUtils'
+import type { CustomCollectionConfig } from '../utils/endpointAuthUtils'
 
 export const protectUserRoleBeforeChange: CollectionBeforeChangeHook = ({
   data,
