@@ -5,4 +5,6 @@ import type { App } from 'payload-elysia-api/server'
 // httpOnly session cookie and the API's CSRF allowlist valid without CORS friction, so browser
 // fetch semantics add the required Origin / Sec-Fetch-Site headers automatically.
 // Route segments mirror the /api prefix, so consumers navigate via payloadApi.users / payloadApi.posts.
-export const payloadApi = treaty<typeof App>('').api
+const dashboardOrigin =
+  typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'
+export const payloadApi = treaty<typeof App>(dashboardOrigin).api
