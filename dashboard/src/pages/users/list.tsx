@@ -3,7 +3,7 @@ import { useGetIdentity } from '@refinedev/core'
 import { Input, Space, Table, Tag } from 'antd'
 import dayjs from 'dayjs'
 
-import type { PayloadUser } from '../../types'
+import type { PayloadUser } from '@/types'
 
 const roleColors: Record<string, string> = {
   superadmin: 'volcano',

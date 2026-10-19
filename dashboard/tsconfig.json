@@ -10,8 +10,14 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
-    "types": ["vite/client"]
+    "types": ["vite/client", "bun"],
+    // NOTE: The first '@' match resolves into this workspace; the second covers the cross-workspace
+    // Eden app types reached from 'payload-elysia-api/server' (api/src uses the same alias).
+    "paths": {
+      "@/*": ["./src/*", "../api/src/*"],
+      "@payload-config": ["../api/src/payload.config.ts"]
+    }
   },
-  "include": ["src", "vite.config.ts"],
+  "include": ["src", "scripts", "vite.config.ts"],
   "exclude": ["node_modules"]
 }

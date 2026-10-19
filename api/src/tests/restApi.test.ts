@@ -5,7 +5,6 @@ import configPromise from '@/payload.config'
 
 const API_ORIGIN = 'http://localhost:3000'
 const DASHBOARD_ORIGIN = 'http://localhost:5173'
-
 // NOTE: Cookie-based auth is CSRF-guarded inside extractJWT: synthetic browser-like
 // requests must present an allowlisted Origin (POST/PATCH/DELETE) or Sec-Fetch-Site
 // same-origin (GET) for the payload-token cookie to be accepted.
@@ -78,7 +77,7 @@ describe('Payload REST API mounted through handleEndpoints', () => {
   })
 
   describe('system endpoints', () => {
-    it('reports health with database connectivity', async () => {
+    it('reports health without database connectivity', async () => {
       const response = await runRestRequest('/api/health')
       expect(response.status).toBe(200)
 
@@ -86,7 +85,9 @@ describe('Payload REST API mounted through handleEndpoints', () => {
       expect(body.success).toBe(true)
       const data = body.data as Record<string, unknown>
       expect(data.status).toBe('healthy')
-      expect(data.database).toBe('connected')
+      expect(data.uptime).toBeTypeOf('number')
+      expect(typeof data.timestamp).toBe('string')
+      expect(data.database).toBeUndefined()
     })
   })
 

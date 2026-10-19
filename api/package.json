@@ -2,6 +2,11 @@
   "name": "payload-elysia-api",
   "version": "1.0.0",
   "type": "module",
+  "exports": {
+    ".": "./src/server.ts",
+    "./server": "./src/server.ts",
+    "./payload-types": "./src/payload-types.ts"
+  },
   "scripts": {
     "dev": "bun --conditions=development src/server.ts",
     "start": "bun --conditions=development src/server.ts",
@@ -22,7 +27,8 @@
   "dependencies": {
     "@payloadcms/db-postgres": "^3.91.0",
     "@payloadcms/richtext-lexical": "^3.91.0",
-    "drizzle-orm": "^0.45.2",
+    "@sinclair/typebox": "0.34.52",
+    "drizzle-orm": "0.45.2",
     "elysia": "^1.4.30",
     "payload": "^3.91.0",
     "payload-oapi": "^0.3.1"

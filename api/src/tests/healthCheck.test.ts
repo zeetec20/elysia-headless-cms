@@ -14,62 +14,22 @@ describe('Healthcheck Endpoint', () => {
     expect(doc.responses?.[200]).toBeDefined()
   })
 
-  it('returns 200 with status healthy and database connected on successful DB probe', async () => {
-    let queryExecuted = false
-    const mockRequest = {
-      payload: {
-        db: {
-          drizzle: {
-            execute: async () => {
-              queryExecuted = true
-              return [{ '?column?': 1 }]
-            },
-          },
-        },
-      },
-    } as unknown as PayloadRequest
+  // NOTE: Liveness stays discovery-cheap by design: no database round-trip runs per probe, so a
+  // degraded database must never fail (or slow down) infrastructure health checks.
+  it('returns 200 liveness data without touching the database', async () => {
+    const mockRequest = {} as unknown as PayloadRequest
 
     const response = await handleGetHealthCheckEndpoint(mockRequest)
-    expect(queryExecuted).toBe(true)
     expect(response.status).toBe(200)
 
     const json = (await response.json()) as {
       success: boolean
-      data: {
-        status: string
-        uptime: number
-        database: string
-        timestamp: string
-      }
+      data: { status: string; uptime: number; database?: unknown; timestamp: string }
     }
     expect(json.success).toBe(true)
     expect(json.data.status).toBe('healthy')
-    expect(json.data.database).toBe('connected')
     expect(typeof json.data.uptime).toBe('number')
     expect(typeof json.data.timestamp).toBe('string')
-  })
-
-  it('returns 503 when database execution fails', async () => {
-    const mockRequest = {
-      payload: {
-        logger: {
-          error: () => {},
-        },
-        db: {
-          drizzle: {
-            execute: async () => {
-              throw new Error('Connection refused')
-            },
-          },
-        },
-      },
-    } as unknown as PayloadRequest
-
-    const response = await handleGetHealthCheckEndpoint(mockRequest)
-    expect(response.status).toBe(503)
-
-    const json = (await response.json()) as { success: boolean; error: string }
-    expect(json.success).toBe(false)
-    expect(json.error).toBe('Database connection unhealthy')
+    expect(json.data.database).toBeUndefined()
   })
 })

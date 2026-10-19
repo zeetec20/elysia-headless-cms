@@ -26,7 +26,7 @@ import {
 } from 'lexical'
 import { type JSX, useEffect, useRef, useState } from 'react'
 
-import type { LexicalSerializedState } from '../types'
+import type { LexicalSerializedState } from '@/types'
 
 export interface LexicalRichTextEditorProps {
   value?: LexicalSerializedState | null

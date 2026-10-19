@@ -1,29 +1,12 @@
-// Types mirroring the Payload collections defined in api/src/collections and payload-types.ts.
+// Types sourced from the api workspace's generated payload-types.ts via the typed Eden facade.
 
-export type PayloadPostStatus = 'draft' | 'published'
+export type { Post as PayloadPost, User as PayloadUser } from 'payload-elysia-api/payload-types'
 
-export interface PayloadPost {
-  id: string
-  title: string
-  slug: string
-  /** Serialized lexical editor state ({ root: ... }) or null when empty. */
-  content: unknown | null
-  status: PayloadPostStatus
-  publishedAt: string | null
-  createdAt: string
-  updatedAt: string
-}
+import type { Post as PayloadPostType } from 'payload-elysia-api/payload-types'
 
-export interface PayloadUser {
-  id: string
-  email: string
-  role: 'superadmin' | 'guest'
-  enableAPIKey?: boolean
-  apiKey?: string
-  createdAt: string
-  updatedAt: string
-}
+export type PayloadPostStatus = NonNullable<PayloadPostType['status']>
 
+// NOTE: Mirrors PostsStatsResult returned by GET /api/posts/stats ({ success: true, data: {...} }).
 export interface PayloadPostsStats {
   totalPosts: number
   byStatus: {

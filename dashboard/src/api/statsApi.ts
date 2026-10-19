@@ -1,8 +1,24 @@
-import type { PayloadPostsStats } from '../types'
-import { requestPayloadApi } from './dataProvider'
+import { payloadApi } from '@/api/edenClient'
+import type { PayloadPostsStats } from '@/types'
+
+interface PostsStatsApiBody {
+  success: boolean
+  data?: PayloadPostsStats
+}
 
 export const fetchPostsStats = async (): Promise<PayloadPostsStats> => {
-  // Custom endpoints implemented by the API follow its { success, data } convention.
-  const json = await requestPayloadApi('/api/posts/stats')
-  return (json.data ?? json) as PayloadPostsStats
+  const result = requireStatsBody(await payloadApi.posts.stats.get())
+  return result.data as unknown as PayloadPostsStats
+}
+
+const requireStatsBody = (result: {
+  data: PostsStatsApiBody | null
+  error: unknown
+  status: number
+}): PostsStatsApiBody => {
+  if (!result.data) {
+    const body = (result.error as { value?: { message?: string } } | null)?.value
+    throw new Error(body?.message ?? `Stats request failed (${result.status})`)
+  }
+  return result.data
 }

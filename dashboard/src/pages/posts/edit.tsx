@@ -2,7 +2,7 @@ import { Edit, useForm } from '@refinedev/antd'
 import { Col, DatePicker, Form, Input, Row, Select } from 'antd'
 import dayjs from 'dayjs'
 
-import { LexicalRichTextEditor } from '../../components/lexical'
+import { LexicalRichTextEditor } from '@/components/lexical'
 
 const statusFormOptions = [
   { label: 'Draft', value: 'draft' },

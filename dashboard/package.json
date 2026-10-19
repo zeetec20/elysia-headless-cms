@@ -9,9 +9,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@lexical/react": "0.50.0",
+    "@ant-design/icons": "^6",
+    "@elysiajs/eden": "^1.3",
     "@lexical/link": "0.50.0",
     "@lexical/list": "0.50.0",
+    "@lexical/react": "0.50.0",
     "@lexical/rich-text": "0.50.0",
     "@lexical/selection": "0.50.0",
     "@refinedev/antd": "^6.0.3",
@@ -29,6 +31,8 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "elysia": "1.4.30",
+    "payload-elysia-api": "workspace:*",
     "typescript": "^5.7.0",
     "vite": "^8.3.4"
   }

@@ -10,16 +10,17 @@ import routerProvider, { NavigateToResource, UnsavedChangesNotifier } from '@ref
 import { App as AntdApp, ConfigProvider } from 'antd'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router'
 
-import { createPayloadAccessControlProvider } from './api/accessControl'
-import { authProvider } from './api/authProvider'
-import { createPayloadDataProvider } from './api/dataProvider'
-import DashboardPage from './pages/dashboard'
-import PostsCreate from './pages/posts/create'
-import PostsEdit from './pages/posts/edit'
-import PostsList from './pages/posts/list'
-import UsersCreate from './pages/users/create'
-import UsersEdit from './pages/users/edit'
-import UsersList from './pages/users/list'
+import { createPayloadAccessControlProvider } from '@/api/accessControl'
+import { authProvider } from '@/api/authProvider'
+import { createPayloadDataProvider } from '@/api/dataProvider'
+import ThemedSiderWithLogout from '@/components/themedSiderWithLogout'
+import DashboardPage from '@/pages/dashboard'
+import PostsCreate from '@/pages/posts/create'
+import PostsEdit from '@/pages/posts/edit'
+import PostsList from '@/pages/posts/list'
+import UsersCreate from '@/pages/users/create'
+import UsersEdit from '@/pages/users/edit'
+import UsersList from '@/pages/users/list'
 
 export const App = () => (
   <BrowserRouter>
@@ -61,7 +62,7 @@ export const App = () => (
             <Route
               element={
                 <Authenticated key="auth-layout" redirectOnFail="/login">
-                  <ThemedLayout>
+                  <ThemedLayout Sider={ThemedSiderWithLogout}>
                     <Outlet />
                   </ThemedLayout>
                 </Authenticated>

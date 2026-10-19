@@ -3,7 +3,7 @@ import { useGetIdentity } from '@refinedev/core'
 import { Input, Space, Table, Tag, Typography } from 'antd'
 import dayjs from 'dayjs'
 
-import type { PayloadPost } from '../../types'
+import type { PayloadPost } from '@/types'
 
 const { Link } = Typography
 

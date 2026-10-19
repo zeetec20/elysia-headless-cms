@@ -1,55 +1,35 @@
 import type { AccessControlProvider } from '@refinedev/core'
-import { fetchCurrentUser } from './dataProvider'
+import type { PayloadMeResponse } from 'payload-elysia-api/server'
+import { payloadApi } from '@/api/edenClient'
 
-// NOTE: Cached per browser session lifetime; login/logout invalidate it. undefined means not
-// fetched yet, null means the /me probe confirmed there is no session.
-let cachedIdentityCache: Record<string, unknown> | null | undefined
+// NOTE: Single-flight promise cache for the browser session lifetime; login/logout invalidates
+// it. A failed or anonymous /me probe resolves null so access decisions deny instead of throwing.
+let cachedIdentityPromise: Promise<PayloadMeResponse['user']> | undefined
 
 export const invalidateIdentityCache = (): void => {
-  cachedIdentityCache = undefined
+  cachedIdentityPromise = undefined
 }
 
-const getCachedIdentity = async (): Promise<Record<string, unknown> | null> => {
-  if (cachedIdentityCache === undefined) {
-    cachedIdentityCache = await fetchCurrentUser().catch(() => null)
-  }
-  return cachedIdentityCache
-}
-
-// NOTE: These rules mirror the server-side Payload access control 1:1 (the server always has
-// the final say) so the dashboard hides actions the API would reject — same as the Payload
-// admin, which consults /api/access before rendering CRUD affordances.
-const resolveGuestAccess = (
-  resource: string | undefined,
-  action: string,
-  params: { id?: unknown } | undefined,
-  identity: Record<string, unknown>,
-): boolean => {
-  if (resource === 'posts') {
-    return action === 'list' || action === 'read' || action === 'show'
-  }
-  if (resource === 'users') {
-    if (action === 'list' || action === 'read' || action === 'show') {
-      return true
-    }
-    if (action === 'edit') {
-      return String(identity.id) === String(params?.id)
-    }
-    return false
-  }
-  return false
+const getCachedIdentity = (): Promise<PayloadMeResponse['user']> => {
+  cachedIdentityPromise ??= payloadApi.users.me
+    .get()
+    .then((result) => result.data?.user ?? null)
+    .catch(() => null)
+  return cachedIdentityPromise
 }
 
 export const createPayloadAccessControlProvider = (): AccessControlProvider => ({
-  can: async ({ resource, action, params }) => {
+  can: async () => {
     const identity = await getCachedIdentity()
     if (!identity) {
       return { can: false, reason: 'Session expired; sign in again' }
     }
-    if (identity.role === 'superadmin') {
-      return { can: true }
+    // NOTE: The dashboard is superadmin-only (the login gate in authProvider enforces it too);
+    // the server always has the final say — these rules only shape the UI affordances.
+    if (identity.role !== 'superadmin') {
+      return { can: false, reason: 'Only superadmin accounts may use the dashboard' }
     }
-    return { can: resolveGuestAccess(resource, action, params, identity) }
+    return { can: true }
   },
   options: {
     buttons: {

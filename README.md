@@ -12,7 +12,9 @@ payload-elysia-refine/
 ## Architecture
 
 - **`api/`** mounts Payload's framework-agnostic REST engine (`handleEndpoints({ config, request })`) on Elysia's `.all('/api/*')` catch-all — Payload handles auth strategies, cookie sessions, CORS, CSRF, custom collection endpoints, OpenAPI docs and errors. The admin panel is disabled (`admin.disable: true`) and there is no Next.js in this repo.
-- **`dashboard/`** (Refine v5 + `@refinedev/antd` 6, Ant Design 5) talks to the same REST API. The Vite dev server proxies `/api` → `http://localhost:3000`, so the Payload httpOnly session cookie works same-origin without extra CORS/CSRF friction.
+- **Typed Elysia facade (`api/src/elysia/typedEndpoints.ts`)**: every route the dashboard uses is declared explicitly ahead of the catch-all with TypeBox request schemas, so malformed bodies are rejected with **422 at the edge** and the dashboard gets end-to-end types via Eden treaty (`treaty<typeof App>`; `App` is the exported server instance). Handlers are pure passthroughs — Payload stays the engine; undeclared paths still serve through the catch-all unchanged.
+- **Dashboard** (Refine v5 + `@refinedev/antd` 6, Ant Design 5) talks to the API **exclusively through the typed Eden treaty client** (`api/` prefix is a route segment, so it resolves as the client root). The Vite dev server proxies `/api` → `VITE_API_PROXY_TARGET` (default `http://localhost:3000`), so the Payload httpOnly session cookie works same-origin without extra CORS/CSRF friction. The dashboard login is **superadmin-only**: guest sessions are rejected at login and every `check()`/access decision demands `role === 'superadmin'` (server rules still decide everything the API accepts).
+- **`GET /api/health`** is liveness only — `{ status, uptime, timestamp }` with no database round-trip (probes must stay cheap; a 200 means the process is up).
 - PostgreSQL via `@payloadcms/db-postgres` with **UUID v7** ids (`idType: 'uuidv7'`), lexical rich text, auto-generated OpenAPI at `/docs` (Scalar UI) secured by the basic-auth plugin per `APP_ENV`.
 
 ## Collections & auth semantics (copied 1:1 from the source project)

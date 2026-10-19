@@ -14,6 +14,11 @@ import type {
   Pagination,
   UpdateParams,
 } from '@refinedev/core'
+import type { PayloadListResponse } from 'payload-elysia-api/server'
+
+import { payloadApi } from '@/api/edenClient'
+
+type PayloadCollection = 'posts' | 'users'
 
 const API_URL = '/api'
 
@@ -29,48 +34,59 @@ export type ApiError = Error & {
   errors?: Record<string, string | string[]>
 }
 
-export const requestPayloadApi = async (
-  url: string,
-  init: RequestInit = {},
-): Promise<Record<string, unknown>> => {
-  const response = await fetch(url, {
-    credentials: 'include',
-    ...init,
-    headers: {
-      ...(init.body ? { 'Content-Type': 'application/json' } : {}),
-      ...init.headers,
-    },
+const createApiErrorFromTreaty = (statusCode: number, error: unknown): ApiError => {
+  const body = (error as { value?: unknown } | null)?.value ?? null
+  const errorBody = body as PayloadErrorBody | null
+  const firstFieldError = errorBody?.errors?.[0]?.message
+  const apiError = new Error(
+    firstFieldError ?? errorBody?.message ?? `Payload API error (${statusCode})`,
+  ) as ApiError
+  apiError.statusCode = statusCode
+  // NOTE: refine-antd useForm maps this per-field errors object onto Form field errors.
+  const payloadErrors = errorBody?.errors ?? []
+  apiError.payloadErrors = payloadErrors
+  Object.defineProperty(apiError, 'errors', {
+    value: Object.fromEntries(
+      payloadErrors
+        .filter((payloadError) => payloadError.path ?? payloadError.field)
+        .map((payloadError) => [
+          payloadError.path ?? payloadError.field,
+          payloadError.message ?? 'Invalid value',
+        ]),
+    ),
   })
-  if (!response.ok) {
-    const errorBody = (await response.json().catch(() => null)) as PayloadErrorBody | null
-    const firstFieldError = errorBody?.errors?.[0]?.message
-    const error = new Error(
-      firstFieldError ?? errorBody?.message ?? response.statusText,
-    ) as ApiError
-    error.statusCode = response.status
-    // NOTE: refine-antd useForm maps this per-field errors object onto Form field errors.
-    const payloadErrors = errorBody?.errors ?? []
-    error.payloadErrors = payloadErrors
-    Object.defineProperty(error, 'errors', {
-      value: Object.fromEntries(
-        payloadErrors
-          .filter((payloadError) => payloadError.path ?? payloadError.field)
-          .map((payloadError) => [
-            payloadError.path ?? payloadError.field,
-            payloadError.message ?? 'Invalid value',
-          ]),
-      ),
-    })
-    throw error
-  }
-  return (await response.json()) as Record<string, unknown>
+  return apiError
 }
 
-// NOTE: Payload REST /api/users/me returns 200 with user:null when no valid session exists;
-// every auth flow must treat a null user as unauthenticated, not rely on the status code.
-export const fetchCurrentUser = async (): Promise<Record<string, unknown> | null> => {
-  const json = await requestPayloadApi('/api/users/me')
-  return (json.user ?? null) as Record<string, unknown> | null
+interface TreatyResult<TData> {
+  data: TData | null
+  error: unknown
+  status: number
+}
+
+const requireData = <TData>(result: TreatyResult<TData>): TData => {
+  if (!result.data) {
+    throw createApiErrorFromTreaty(result.status, result.error)
+  }
+  return result.data
+}
+
+// NOTE: Eden treaty types model :param routes as CreateParams callables, but at runtime only
+// index access substitutes the actual id (observed on @elysiajs/eden 1.4.9). These narrow
+// accessors are the single cast boundary each while keeping end-to-end typing of the route.
+const postsDocumentRoute = (postId: string): ReturnType<typeof payloadApi.posts> =>
+  (payloadApi.posts as unknown as Record<string, ReturnType<typeof payloadApi.posts>>)[postId]
+const usersDocumentRoute = (userId: string): ReturnType<typeof payloadApi.users> =>
+  (payloadApi.users as unknown as Record<string, ReturnType<typeof payloadApi.users>>)[userId]
+
+const documentQueryOptions = { query: { depth: '0' } }
+
+interface CollectionQuery {
+  limit: number
+  page: number
+  depth: string
+  sort?: string
+  where?: string
 }
 
 const payloadOperatorByRefineOperator: Partial<Record<CrudOperators, string>> = {
@@ -145,25 +161,34 @@ const buildSortParam = (sorters: CrudSorting = []): string | undefined => {
   return sorters.map(({ field, order }) => (order === 'desc' ? `-${field}` : field)).join(',')
 }
 
-const buildListQuery = (
-  resource: string,
+const buildCollectionQuery = (
   pagination: Pagination | undefined,
   sorters: CrudSorting | undefined,
   filters: CrudFilters | undefined,
-): string => {
-  const params = new URLSearchParams()
-  params.set('limit', String(pagination?.pageSize ?? 10))
-  params.set('page', String(pagination?.currentPage ?? 1))
-  params.set('depth', '0')
+): CollectionQuery => {
   const sortQuery = buildSortParam(sorters ?? [])
-  if (sortQuery) {
-    params.set('sort', sortQuery)
-  }
   const whereQuery = buildPayloadWhereFromFilters(filters ?? [])
-  if (whereQuery) {
-    params.set('where', whereQuery)
+  return {
+    limit: pagination?.pageSize ?? 10,
+    page: pagination?.currentPage ?? 1,
+    depth: '0',
+    ...(sortQuery ? { sort: sortQuery } : {}),
+    ...(whereQuery ? { where: whereQuery } : {}),
   }
-  return `/${resource}?${params.toString()}`
+}
+
+const fetchCollectionList = async (
+  collection: PayloadCollection,
+  query: CollectionQuery,
+): Promise<PayloadListResponse<Array<Record<string, unknown>>>> => {
+  if (collection === 'posts') {
+    return requireData(await payloadApi.posts.get({ query })) as unknown as PayloadListResponse<
+      Array<Record<string, unknown>>
+    >
+  }
+  return requireData(await payloadApi.users.get({ query })) as unknown as PayloadListResponse<
+    Array<Record<string, unknown>>
+  >
 }
 
 export const createPayloadDataProvider = (): DataProvider => ({
@@ -175,38 +200,55 @@ export const createPayloadDataProvider = (): DataProvider => ({
     sorters,
     filters,
   }: GetListParams) => {
-    const json = await requestPayloadApi(
-      `${API_URL}${buildListQuery(resource, pagination, sorters, filters)}`,
+    const list = await fetchCollectionList(
+      resource as PayloadCollection,
+      buildCollectionQuery(pagination, sorters, filters),
     )
     return {
-      data: (json.docs as TData[]) ?? [],
-      total: (json.totalDocs as number) ?? 0,
+      data: (list.docs as unknown as TData[]) ?? [],
+      total: list.totalDocs ?? 0,
     }
   },
 
   getMany: async <TData extends BaseRecord = BaseRecord>({ resource, ids }: GetManyParams) => {
-    const whereQuery = JSON.stringify({ id: { in: ids } })
-    const json = await requestPayloadApi(
-      `${API_URL}/${resource}?where=${encodeURIComponent(whereQuery)}&limit=${ids.length}&depth=0`,
-    )
-    return { data: (json.docs as TData[]) ?? [] }
+    const list = await fetchCollectionList(resource as PayloadCollection, {
+      where: JSON.stringify({ id: { in: ids } }),
+      limit: ids.length,
+      page: 1,
+      depth: '0',
+    })
+    return { data: (list.docs as unknown as TData[]) ?? [] }
   },
 
   getOne: async <TData extends BaseRecord = BaseRecord>({ resource, id }: GetOneParams) => {
-    const json = await requestPayloadApi(`${API_URL}/${resource}/${encodeURI(String(id))}?depth=0`)
-    // NOTE: REST getOne returns the document directly; create/update/delete wrap it in { doc }.
-    return { data: (json.doc as TData) ?? (json as unknown as TData) }
+    if (resource === 'posts') {
+      const doc = requireData(await postsDocumentRoute(String(id)).get(documentQueryOptions))
+      return { data: doc as unknown as TData }
+    }
+    const doc = requireData(await usersDocumentRoute(String(id)).get(documentQueryOptions))
+    return { data: doc as unknown as TData }
   },
 
   create: async <TData extends BaseRecord = BaseRecord, TVariables = Record<string, unknown>>({
     resource,
     variables,
   }: CreateParams<TVariables>) => {
-    const json = await requestPayloadApi(`${API_URL}/${resource}?depth=0`, {
-      method: 'POST',
-      body: JSON.stringify(variables),
-    })
-    return { data: json.doc as TData }
+    if (resource === 'posts') {
+      const response = requireData(
+        await payloadApi.posts.post(
+          variables as unknown as { title: string; slug: string },
+          documentQueryOptions,
+        ),
+      )
+      return { data: response.doc as unknown as TData }
+    }
+    const response = requireData(
+      await payloadApi.users.post(
+        variables as unknown as { email: string; password: string },
+        documentQueryOptions,
+      ),
+    )
+    return { data: response.doc as unknown as TData }
   },
 
   update: async <TData extends BaseRecord = BaseRecord, TVariables = Record<string, unknown>>({
@@ -214,25 +256,38 @@ export const createPayloadDataProvider = (): DataProvider => ({
     id,
     variables,
   }: UpdateParams<TVariables>) => {
-    const json = await requestPayloadApi(
-      `${API_URL}/${resource}/${encodeURI(String(id))}?depth=0`,
-      {
-        method: 'PATCH',
-        body: JSON.stringify(variables),
-      },
+    if (resource === 'posts') {
+      const response = requireData(
+        await postsDocumentRoute(String(id)).patch(
+          variables as unknown as { title?: string; slug?: string },
+          documentQueryOptions,
+        ),
+      )
+      return { data: response.doc as unknown as TData }
+    }
+    const response = requireData(
+      await usersDocumentRoute(String(id)).patch(
+        variables as unknown as { email?: string; password?: string },
+        documentQueryOptions,
+      ),
     )
-    return { data: json.doc as TData }
+    return { data: response.doc as unknown as TData }
   },
 
   deleteOne: async <TData extends BaseRecord = BaseRecord, TVariables = Record<string, unknown>>({
     resource,
     id,
   }: DeleteOneParams<TVariables>) => {
-    const json = await requestPayloadApi(
-      `${API_URL}/${resource}/${encodeURI(String(id))}?depth=0`,
-      { method: 'DELETE' },
+    if (resource === 'posts') {
+      const response = requireData(
+        await postsDocumentRoute(String(id)).delete(undefined, documentQueryOptions),
+      )
+      return { data: response.doc as unknown as TData }
+    }
+    const response = requireData(
+      await usersDocumentRoute(String(id)).delete(undefined, documentQueryOptions),
     )
-    return { data: json.doc as TData }
+    return { data: response.doc as unknown as TData }
   },
 
   deleteMany: async <TData extends BaseRecord = BaseRecord, TVariables = Record<string, unknown>>({
@@ -240,18 +295,22 @@ export const createPayloadDataProvider = (): DataProvider => ({
     ids,
   }: DeleteManyParams<TVariables>) => {
     const results = await Promise.allSettled(
-      ids.map((id) =>
-        requestPayloadApi(`${API_URL}/${resource}/${encodeURI(String(id))}?depth=0`, {
-          method: 'DELETE',
-        }),
-      ),
+      ids.map(async (id): Promise<TData> => {
+        if (resource === 'posts') {
+          return requireData(
+            await postsDocumentRoute(String(id)).delete(undefined, documentQueryOptions),
+          ).doc as unknown as TData
+        }
+        return requireData(
+          await usersDocumentRoute(String(id)).delete(undefined, documentQueryOptions),
+        ).doc as unknown as TData
+      }),
     )
     const docs = results
       .filter(
-        (result): result is PromiseFulfilledResult<Record<string, unknown>> =>
-          result.status === 'fulfilled',
+        (result): result is PromiseFulfilledResult<Awaited<TData>> => result.status === 'fulfilled',
       )
-      .map((result) => result.value.doc as TData)
+      .map((result) => result.value as TData)
     return { data: docs }
   },
 })

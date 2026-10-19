@@ -2,7 +2,7 @@ import { Edit, useForm } from '@refinedev/antd'
 import { useGetIdentity } from '@refinedev/core'
 import { Checkbox, Col, Form, Input, Row, Select, Typography } from 'antd'
 
-import type { PayloadUser } from '../../types'
+import type { PayloadUser } from '@/types'
 
 const { Text } = Typography
 

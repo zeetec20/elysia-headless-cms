@@ -1,8 +1,8 @@
 import { Card, Col, Row, Statistic, Tag, Typography } from 'antd'
 import { useEffect, useState } from 'react'
 
-import { fetchPostsStats } from '../api/statsApi'
-import type { PayloadPostsStats } from '../types'
+import { fetchPostsStats } from '@/api/statsApi'
+import type { PayloadPostsStats } from '@/types'
 
 const { Title, Text } = Typography
 
