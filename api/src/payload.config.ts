@@ -30,6 +30,8 @@ export default buildConfig({
   admin: {
     disable: true,
     user: Users.slug,
+    // NOTE: Dev-mode admin auto-login must never inject a session into a custom dashboard.
+    autoLogin: false,
   },
   serverURL: serverUrl,
   // NOTE: Dev-mode direct access origin for the Refine dashboard when not reverse-proxied.
