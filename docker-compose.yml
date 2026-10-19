@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: payload_elysia
+    volumes:
+      - payload_elysia_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d payload_elysia"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: .
+    environment:
+      # NOTE: PGUSER must match the user inside DATABASE_URI: the pg pool applies the explicit
+      # user field over the connection-string user.
+      DATABASE_URI: postgres://postgres:postgres@db:5432/payload_elysia
+      PGUSER: postgres
+      PAYLOAD_SECRET: change-me-32-chars-minimum
+      APP_ENV: development
+      PORT: "3000"
+      # NOTE: Set this to the deployed dashboard origin so cookie auth (csrf allowlist) accepts it.
+      DASHBOARD_URL: http://localhost:5173
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  payload_elysia_pgdata:

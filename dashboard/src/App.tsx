@@ -72,7 +72,11 @@ export const App = () => (
                 <Route
                   index
                   element={
-                    <CanAccess resource="posts" action="list" fallback={<Navigate to="/" replace />}>
+                    <CanAccess
+                      resource="posts"
+                      action="list"
+                      fallback={<Navigate to="/" replace />}
+                    >
                       <PostsList />
                     </CanAccess>
                   }

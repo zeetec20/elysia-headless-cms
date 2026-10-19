@@ -3,7 +3,7 @@ import { fetchCurrentUser } from './dataProvider'
 
 // NOTE: Cached per browser session lifetime; login/logout invalidate it. undefined means not
 // fetched yet, null means the /me probe confirmed there is no session.
-let cachedIdentityCache: Record<string, unknown> | null | undefined = undefined
+let cachedIdentityCache: Record<string, unknown> | null | undefined
 
 export const invalidateIdentityCache = (): void => {
   cachedIdentityCache = undefined

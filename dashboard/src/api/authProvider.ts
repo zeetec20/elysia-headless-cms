@@ -1,6 +1,6 @@
 import type { AuthProvider } from '@refinedev/core'
-import { fetchCurrentUser, requestPayloadApi } from './dataProvider'
 import { invalidateIdentityCache } from './accessControl'
+import { fetchCurrentUser, requestPayloadApi } from './dataProvider'
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
