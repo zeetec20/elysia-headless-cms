@@ -66,6 +66,13 @@ export const requestPayloadApi = async (
   return (await response.json()) as Record<string, unknown>
 }
 
+// NOTE: Payload REST /api/users/me returns 200 with user:null when no valid session exists;
+// every auth flow must treat a null user as unauthenticated, not rely on the status code.
+export const fetchCurrentUser = async (): Promise<Record<string, unknown> | null> => {
+  const json = await requestPayloadApi('/api/users/me')
+  return (json.user ?? null) as Record<string, unknown> | null
+}
+
 const payloadOperatorByRefineOperator: Partial<Record<CrudOperators, string>> = {
   eq: 'equals',
   ne: 'not_equals',

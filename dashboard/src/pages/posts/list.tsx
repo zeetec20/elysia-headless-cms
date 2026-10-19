@@ -35,7 +35,13 @@ const PostsList = () => {
         <Table.Column<PayloadPost>
           dataIndex="title"
           title="Title"
-          render={(value: string, record) => <Link href={`/posts/${record.id}/edit`}>{value}</Link>}
+          render={(value: string, record) =>
+            identity?.role === 'superadmin' ? (
+              <Link href={`/posts/${record.id}/edit`}>{value}</Link>
+            ) : (
+              value
+            )
+          }
         />
         <Table.Column<PayloadPost> dataIndex="slug" title="Slug" />
         <Table.Column<PayloadPost>

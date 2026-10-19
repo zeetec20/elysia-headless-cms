@@ -5,11 +5,12 @@ import {
   ThemedLayout,
   useNotificationProvider,
 } from '@refinedev/antd'
-import { Authenticated, Refine } from '@refinedev/core'
+import { Authenticated, CanAccess, Refine } from '@refinedev/core'
 import routerProvider, { NavigateToResource, UnsavedChangesNotifier } from '@refinedev/react-router'
 import { App as AntdApp, ConfigProvider } from 'antd'
-import { BrowserRouter, Outlet, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router'
 
+import { createPayloadAccessControlProvider } from './api/accessControl'
 import { authProvider } from './api/authProvider'
 import { createPayloadDataProvider } from './api/dataProvider'
 import DashboardPage from './pages/dashboard'
@@ -28,6 +29,7 @@ export const App = () => (
           routerProvider={routerProvider}
           dataProvider={createPayloadDataProvider()}
           authProvider={authProvider}
+          accessControlProvider={createPayloadAccessControlProvider()}
           notificationProvider={useNotificationProvider}
           resources={[
             {
@@ -67,9 +69,38 @@ export const App = () => (
             >
               <Route path="/" element={<DashboardPage />} />
               <Route path="/posts" element={<Outlet />}>
-                <Route index element={<PostsList />} />
-                <Route path="create" element={<PostsCreate />} />
-                <Route path=":id/edit" element={<PostsEdit />} />
+                <Route
+                  index
+                  element={
+                    <CanAccess resource="posts" action="list" fallback={<Navigate to="/" replace />}>
+                      <PostsList />
+                    </CanAccess>
+                  }
+                />
+                <Route
+                  path="create"
+                  element={
+                    <CanAccess
+                      resource="posts"
+                      action="create"
+                      fallback={<Navigate to="/posts" replace />}
+                    >
+                      <PostsCreate />
+                    </CanAccess>
+                  }
+                />
+                <Route
+                  path=":id/edit"
+                  element={
+                    <CanAccess
+                      resource="posts"
+                      action="edit"
+                      fallback={<Navigate to="/posts" replace />}
+                    >
+                      <PostsEdit />
+                    </CanAccess>
+                  }
+                />
               </Route>
               <Route path="/users" element={<Outlet />}>
                 <Route index element={<UsersList />} />

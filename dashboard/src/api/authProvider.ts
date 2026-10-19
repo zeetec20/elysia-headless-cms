@@ -1,12 +1,6 @@
 import type { AuthProvider } from '@refinedev/core'
-import { requestPayloadApi } from './dataProvider'
-
-// NOTE: Payload REST /api/users/me returns 200 with user:null when no valid session exists;
-// every auth flow must treat a null user as unauthenticated, not rely on the status code.
-const fetchCurrentUser = async (): Promise<Record<string, unknown> | null> => {
-  const json = await requestPayloadApi('/api/users/me')
-  return (json.user ?? null) as Record<string, unknown> | null
-}
+import { fetchCurrentUser, requestPayloadApi } from './dataProvider'
+import { invalidateIdentityCache } from './accessControl'
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
@@ -15,6 +9,7 @@ export const authProvider: AuthProvider = {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       })
+      invalidateIdentityCache()
       return { success: true, redirectTo: '/' }
     } catch (error) {
       return {
@@ -40,6 +35,7 @@ export const authProvider: AuthProvider = {
   },
 
   logout: async () => {
+    invalidateIdentityCache()
     try {
       await requestPayloadApi('/api/users/logout', { method: 'POST' })
     } catch {
