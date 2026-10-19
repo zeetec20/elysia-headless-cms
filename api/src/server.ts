@@ -1,7 +1,10 @@
-import { handleEndpoints } from 'payload'
+import { getPayload, handleEndpoints } from 'payload'
 
 import configPromise from './payload.config'
 import { withHttpRequestLogging } from './utils/httpRequestLoggerUtils'
+
+const payloadPromise = getPayload({ config: configPromise })
+payloadPromise.catch(() => {})
 
 const port = Number(process.env.PORT) || 3000
 
@@ -13,7 +16,16 @@ const handleApiEndpoint = async (request: Request): Promise<Response> => {
   return new Response('Not Found', { status: 404 })
 }
 
-export const handleApiRequest = withHttpRequestLogging(handleApiEndpoint)
+export const handleApiRequest = withHttpRequestLogging(handleApiEndpoint, {
+  logger: async () => {
+    try {
+      const payload = await payloadPromise
+      return payload.logger
+    } catch {
+      return undefined
+    }
+  },
+})
 
 export const App = {
   handle: handleApiRequest,

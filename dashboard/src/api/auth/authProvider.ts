@@ -1,7 +1,12 @@
 import type { AuthProvider } from '@refinedev/core'
 import type { PayloadUser } from '@/types'
 import { apiClient } from '../restClient'
-import { invalidateIdentityCache } from './accessControl'
+import {
+  clearAuthState,
+  getCachedCurrentUser,
+  setCachedCurrentUser,
+  setStoredAuthToken,
+} from './authState'
 
 const extractSessionErrorMessage = (error: unknown): string => {
   if (
@@ -34,26 +39,17 @@ const createSessionError = (statusCode: number, error: unknown): Error => {
   return sessionError
 }
 
-const fetchCurrentUser = async (): Promise<PayloadUser | null> => {
-  const { data, error, response } = await apiClient.GET('/api/users/me', {})
-  if (!response.ok) {
-    throw createSessionError(response.status, error)
-  }
-  return (data?.user as PayloadUser | undefined) ?? null
-}
-
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
     try {
       const { data, error, response } = await apiClient.POST('/api/users/login', {
         body: { email, password },
       })
-      if (!data?.user) {
+      if (!data?.user || !data?.token) {
         throw createSessionError(response.status, error)
       }
-      // NOTE: Only superadmin accounts may use the dashboard; guests keep REST/registration
-      // semantics server-side. Clear the just-set cookie so the rejected session does not linger.
       if (data.user.role !== 'superadmin') {
+        clearAuthState()
         await apiClient.POST('/api/users/logout', {}).catch(() => undefined)
         return {
           success: false,
@@ -63,7 +59,8 @@ export const authProvider: AuthProvider = {
           },
         }
       }
-      invalidateIdentityCache()
+      setStoredAuthToken(data.token)
+      setCachedCurrentUser(data.user as PayloadUser)
       return { success: true, redirectTo: '/' }
     } catch (error) {
       return {
@@ -78,9 +75,7 @@ export const authProvider: AuthProvider = {
 
   check: async () => {
     try {
-      const user = await fetchCurrentUser()
-      // NOTE: Payload REST /api/users/me returns 200 with user:null when no valid session exists;
-      // every auth flow treats a null user as unauthenticated, not by the status code alone.
+      const user = await getCachedCurrentUser()
       if (user?.role !== 'superadmin') {
         return { authenticated: false, logout: true, redirectTo: '/login' }
       }
@@ -91,17 +86,13 @@ export const authProvider: AuthProvider = {
   },
 
   logout: async () => {
-    invalidateIdentityCache()
-    await apiClient.POST('/api/users/logout', {}).catch(
-      () =>
-        // Best-effort logout; the cookie clears server-side, a failed call still ends the session.
-        undefined,
-    )
+    clearAuthState()
+    await apiClient.POST('/api/users/logout', {}).catch(() => undefined)
     return { success: true, redirectTo: '/login' }
   },
 
   getIdentity: async () => {
-    const user = await fetchCurrentUser()
+    const user = await getCachedCurrentUser()
     if (!user) {
       throw new Error('User is not authenticated')
     }
@@ -114,7 +105,7 @@ export const authProvider: AuthProvider = {
   },
 
   getPermissions: async () => {
-    const user = await fetchCurrentUser()
+    const user = await getCachedCurrentUser()
     if (!user) {
       throw new Error('User is not authenticated')
     }
@@ -123,9 +114,8 @@ export const authProvider: AuthProvider = {
 
   onError: async (error) => {
     const statusCode = extractErrorStatusCode(error)
-    // NOTE: 403 is an access-control denial and must keep the session; only 401 means the
-    // session itself is gone and logging out is correct.
     if (statusCode === 401) {
+      clearAuthState()
       return { logout: true, redirectTo: '/login', error }
     }
     return {}

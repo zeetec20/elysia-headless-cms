@@ -11,11 +11,23 @@ payload-elysia-refine/
 
 ## Architecture
 
-- **`api/`** mounts Payload's framework-agnostic REST engine (`handleEndpoints({ config, request })`) on Elysia's `.all('/api/*')` catch-all — Payload handles auth strategies, cookie sessions, CORS, CSRF, custom collection endpoints, OpenAPI docs and errors. The admin panel is disabled (`admin.disable: true`) and there is no Next.js in this repo.
-- **Typed Elysia facade (`api/src/elysia/typedEndpoints.ts`)**: every route the dashboard uses is declared explicitly ahead of the catch-all with TypeBox request schemas, so malformed bodies are rejected with **422 at the edge** and the dashboard gets end-to-end types via Eden treaty (`treaty<typeof App>`; `App` is the exported server instance). Handlers are pure passthroughs — Payload stays the engine; undeclared paths still serve through the catch-all unchanged.
-- **Dashboard** (Refine v5 + `@refinedev/antd` 6, Ant Design 5) talks to the API **exclusively through the typed Eden treaty client** (`api/` prefix is a route segment, so it resolves as the client root). The Vite dev server proxies `/api` → `VITE_API_PROXY_TARGET` (default `http://localhost:3000`), so the Payload httpOnly session cookie works same-origin without extra CORS/CSRF friction. The dashboard login is **superadmin-only**: guest sessions are rejected at login and every `check()`/access decision demands `role === 'superadmin'` (server rules still decide everything the API accepts).
-- **`GET /api/health`** is liveness only — `{ status, uptime, timestamp }` with no database round-trip (probes must stay cheap; a 200 means the process is up).
-- PostgreSQL via `@payloadcms/db-postgres` with **UUID v7** ids (`idType: 'uuidv7'`), lexical rich text, auto-generated OpenAPI at `/docs` (Scalar UI) secured by the basic-auth plugin per `APP_ENV`.
+```mermaid
+graph LR
+  UI["Refine Dashboard<br/>React 19 + Antd 5<br/>(:5173)"]
+  Vite["Vite Reverse Proxy<br/>(/api)"]
+  API["Bun + Payload 3 Headless<br/>REST Engine (:3000)"]
+  DB[("PostgreSQL 17<br/>UUIDv7")]
+
+  UI -- "dev: /api" --> Vite
+  Vite -- "target: VITE_API_URL" --> API
+  UI -- "prod: Authorization: Bearer <token>" --> API
+  API --> DB
+```
+
+- ⚡ **API**: Headless Payload 3 REST engine on Bun `Bun.serve` (no admin UI, no Next.js).
+- 🔒 **Auth**: Superadmin JWT Bearer token authentication (`Authorization: Bearer <token>`).
+- 📊 **Database**: PostgreSQL with UUID v7 ids and Drizzle custom aggregations (`/api/posts/stats`).
+- 🧭 **Docs**: Scalar OpenAPI interactive docs at `/docs` (basic-auth secured by `APP_ENV`).
 
 ## Collections & auth semantics (copied 1:1 from the source project)
 
@@ -70,7 +82,7 @@ All API runtime behavior is env-driven (`api/.env` in development, container/CLI
 | `SERVER_URL` | API | Canonical API origin exposed to clients (default `http://localhost:3000`). |
 | `DASHBOARD_URL` | API | Dashboard's real origin: feeds both the CORS allowlist **and** the cookie-CSRF allowlist. |
 | `APP_ENV` | API | `development` / `uat` / `production`; gates the basic-auth-protected `/docs`. |
-| `VITE_API_PROXY_TARGET` | dashboard | Dev-only Vite proxy target (default `http://127.0.0.1:3000`). |
+| `VITE_API_URL` | dashboard | Base REST API URL consumed by the dashboard client and Vite proxy (default `http://localhost:3000`). |
 
 **Cookie-auth rule in production:** Payload's `extractJWT` drops the `payload-token` cookie unless the request `Origin` header is allowlisted in `config.csrf`. `DASHBOARD_URL` must therefore be set to the exact deployed dashboard origin (e.g. the Vercel URL, scheme included), or every dashboard write silently becomes an anonymous request and fails with 403 — the same failure mode a drifted dev Vite port produces locally.
 

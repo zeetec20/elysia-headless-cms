@@ -1,26 +1,8 @@
 import type { AccessControlProvider } from '@refinedev/core'
-import type { PayloadUser } from '@/types'
-import { apiClient } from '../restClient'
-
-// NOTE: Single-flight promise cache for the browser session lifetime; login/logout invalidates
-// it. A failed or anonymous /me probe resolves null so access decisions deny instead of throwing.
-let cachedIdentityPromise: Promise<PayloadUser | null> | undefined
-
-export const invalidateIdentityCache = (): void => {
-  cachedIdentityPromise = undefined
-}
-
-const getCachedIdentity = (): Promise<PayloadUser | null> => {
-  cachedIdentityPromise ??= apiClient
-    .GET('/api/users/me', {})
-    .then((result) => (result.data?.user as PayloadUser | undefined) ?? null)
-    .catch(() => null)
-  return cachedIdentityPromise
-}
-
+import { getCachedCurrentUser } from './authState'
 export const createPayloadAccessControlProvider = (): AccessControlProvider => ({
   can: async () => {
-    const identity = await getCachedIdentity()
+    const identity = await getCachedCurrentUser()
     if (!identity) {
       return { can: false, reason: 'Session expired; sign in again' }
     }

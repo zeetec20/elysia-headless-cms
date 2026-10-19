@@ -1,4 +1,5 @@
 import { describe, expect, it, mock } from 'bun:test'
+import type { PayloadLogger } from 'payload'
 import {
   formatHttpRequestDuration,
   formatHttpRequestLogMessage,
@@ -8,13 +9,21 @@ import {
   writeHttpRequestLog,
 } from '@/utils/httpRequestLoggerUtils'
 
+const createMockPayloadLogger = () => {
+  return {
+    info: mock((_data: unknown, _msg?: string) => {}),
+    warn: mock((_data: unknown, _msg?: string) => {}),
+    error: mock((_data: unknown, _msg?: string) => {}),
+  } as unknown as PayloadLogger
+}
+
 describe('HTTP Request Logger Utils', () => {
   describe('formatHttpRequestDuration', () => {
     it('formats millisecond floats to exact two decimal digits', () => {
-      expect(formatHttpRequestDuration(3.456)).toBe('3.46ms')
       expect(formatHttpRequestDuration(0)).toBe('0.00ms')
-      expect(formatHttpRequestDuration(15.2)).toBe('15.20ms')
-      expect(formatHttpRequestDuration(120.999)).toBe('121.00ms')
+      expect(formatHttpRequestDuration(12.3456)).toBe('12.35ms')
+      expect(formatHttpRequestDuration(100)).toBe('100.00ms')
+      expect(formatHttpRequestDuration(999.999)).toBe('1000.00ms')
     })
   })
 
@@ -40,12 +49,12 @@ describe('HTTP Request Logger Utils', () => {
       expect(resolveHttpRequestLogLevel(502)).toBe('error')
       expect(resolveHttpRequestLogLevel(503)).toBe('error')
       expect(resolveHttpRequestLogLevel(200, true)).toBe('error')
-      expect(resolveHttpRequestLogLevel(404, true)).toBe('error')
+      expect(resolveHttpRequestLogLevel(400, true)).toBe('error')
     })
   })
 
   describe('formatHttpRequestLogMessage', () => {
-    it('validates output pattern matching [HH:MM:SS] [INFO] [HTTP] GET /api/posts?limit=10 200 - 15.20ms', () => {
+    it('formats standard request message matching METHOD PATH STATUS - DURATION', () => {
       const entry: HttpRequestLogEntry = {
         timestamp: '14:30:00',
         method: 'GET',
@@ -54,12 +63,10 @@ describe('HTTP Request Logger Utils', () => {
         durationMs: 15.2,
         level: 'info',
       }
-      expect(formatHttpRequestLogMessage(entry)).toBe(
-        '[14:30:00] [INFO] [HTTP] GET /api/posts?limit=10 200 - 15.20ms',
-      )
+      expect(formatHttpRequestLogMessage(entry)).toBe('GET /api/posts?limit=10 200 - 15.20ms')
     })
 
-    it('validates output with error suffix when errorMessage is present', () => {
+    it('formats message with error suffix when errorMessage is present', () => {
       const entry: HttpRequestLogEntry = {
         timestamp: '14:30:00',
         method: 'POST',
@@ -70,23 +77,7 @@ describe('HTTP Request Logger Utils', () => {
         errorMessage: 'Database connection failed',
       }
       expect(formatHttpRequestLogMessage(entry)).toBe(
-        '[14:30:00] [ERROR] [HTTP] POST /api/posts 500 - 42.10ms (error: Database connection failed)',
-      )
-    })
-
-    it('parses ISO date timestamps into HH:MM:SS format', () => {
-      const isoDate = new Date('2025-01-01T12:34:56Z').toISOString()
-      const entry: HttpRequestLogEntry = {
-        timestamp: isoDate,
-        method: 'GET',
-        path: '/api/health',
-        status: 200,
-        durationMs: 5.12,
-        level: 'info',
-      }
-      const message = formatHttpRequestLogMessage(entry)
-      expect(message).toMatch(
-        /^\[\d{2}:\d{2}:\d{2}\] \[INFO\] \[HTTP\] GET \/api\/health 200 - 5.12ms$/,
+        'POST /api/posts 500 - 42.10ms (error: Database connection failed)',
       )
     })
   })
@@ -106,63 +97,32 @@ describe('HTTP Request Logger Utils', () => {
       expect(logs).toEqual([entry])
     })
 
-    it('falls back to console methods when no sink is provided', () => {
-      const originalInfo = console.info
-      const originalWarn = console.warn
-      const originalError = console.error
-
-      const infoMock = mock(() => {})
-      const warnMock = mock(() => {})
-      const errorMock = mock(() => {})
-
-      console.info = infoMock
-      console.warn = warnMock
-      console.error = errorMock
-
-      try {
-        writeHttpRequestLog({
-          timestamp: '10:00:00',
-          method: 'GET',
-          path: '/info',
-          status: 200,
-          durationMs: 1,
-          level: 'info',
-        })
-        expect(infoMock).toHaveBeenCalledTimes(1)
-
-        writeHttpRequestLog({
-          timestamp: '10:00:00',
-          method: 'GET',
-          path: '/warn',
-          status: 404,
-          durationMs: 1,
-          level: 'warn',
-        })
-        expect(warnMock).toHaveBeenCalledTimes(1)
-
-        writeHttpRequestLog({
-          timestamp: '10:00:00',
-          method: 'GET',
-          path: '/err',
-          status: 500,
-          durationMs: 1,
-          level: 'error',
-        })
-        expect(errorMock).toHaveBeenCalledTimes(1)
-      } finally {
-        console.info = originalInfo
-        console.warn = originalWarn
-        console.error = originalError
+    it('dispatches to logger when provided', () => {
+      const mockLogger = createMockPayloadLogger()
+      const entry: HttpRequestLogEntry = {
+        timestamp: '12:00:00',
+        method: 'POST',
+        path: '/api/users',
+        status: 201,
+        durationMs: 25.5,
+        level: 'info',
       }
+      writeHttpRequestLog(entry, undefined, mockLogger)
+      expect(mockLogger.info).toHaveBeenCalledTimes(1)
+      expect(mockLogger.info).toHaveBeenCalledWith('POST /api/users 201 - 25.50ms')
     })
   })
 
   describe('withHttpRequestLogging', () => {
-    it('logs successful GET requests with 200 status and info level', async () => {
+    it('logs successful GET requests with 200 status and info level via logger and sink', async () => {
+      const mockLogger = createMockPayloadLogger()
       const { promise, resolve } = Promise.withResolvers<HttpRequestLogEntry>()
       const handler = withHttpRequestLogging(
         () => new Response(JSON.stringify({ ok: true }), { status: 200 }),
-        { sink: (entry) => resolve(entry) },
+        {
+          logger: mockLogger,
+          sink: (entry) => resolve(entry),
+        },
       )
 
       const response = await handler(
@@ -180,16 +140,23 @@ describe('HTTP Request Logger Utils', () => {
       expect(log.path).toBe('/test?page=1')
       expect(log.status).toBe(200)
       expect(log.level).toBe('info')
-      expect(log.userAgent).toBe('BunTestAgent/1.0')
-      expect(log.ip).toBe('192.168.1.1')
       expect(log.durationMs).toBeGreaterThanOrEqual(0)
+
+      expect(mockLogger.info).toHaveBeenCalledTimes(1)
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringMatching(/^GET \/test\?page=1 200 - \d+\.\d{2}ms$/),
+      )
     })
 
-    it('logs routes setting 404 with warn level', async () => {
+    it('logs routes setting 404 with warn level via async logger function', async () => {
+      const mockLogger = createMockPayloadLogger()
       const { promise, resolve } = Promise.withResolvers<HttpRequestLogEntry>()
       const handler = withHttpRequestLogging(
         () => new Response(JSON.stringify({ error: 'Not found' }), { status: 404 }),
-        { sink: (entry) => resolve(entry) },
+        {
+          logger: async () => mockLogger,
+          sink: (entry) => resolve(entry),
+        },
       )
 
       const response = await handler(new Request('http://localhost/not-found'))
@@ -197,15 +164,24 @@ describe('HTTP Request Logger Utils', () => {
       expect(response.status).toBe(404)
       expect(log.status).toBe(404)
       expect(log.level).toBe('warn')
+
+      expect(mockLogger.warn).toHaveBeenCalledTimes(1)
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringMatching(/^GET \/not-found 404 - \d+\.\d{2}ms$/),
+      )
     })
 
     it('logs route throwing error with 500 status, error level, and errorMessage', async () => {
+      const mockLogger = createMockPayloadLogger()
       const { promise, resolve } = Promise.withResolvers<HttpRequestLogEntry>()
       const handler = withHttpRequestLogging(
         () => {
           throw new Error('Database connection lost')
         },
-        { sink: (entry) => resolve(entry) },
+        {
+          logger: mockLogger,
+          sink: (entry) => resolve(entry),
+        },
       )
 
       const response = await handler(new Request('http://localhost/boom'))
@@ -214,18 +190,30 @@ describe('HTTP Request Logger Utils', () => {
       expect(log.status).toBe(500)
       expect(log.level).toBe('error')
       expect(log.errorMessage).toBe('Database connection lost')
+
+      expect(mockLogger.error).toHaveBeenCalledTimes(1)
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.stringMatching(
+          /^GET \/boom 500 - \d+\.\d{2}ms \(error: Database connection lost\)$/,
+        ),
+      )
     })
 
     it('respects disabled option and skips logging', async () => {
+      const mockLogger = createMockPayloadLogger()
       const logs: HttpRequestLogEntry[] = []
       const handler = withHttpRequestLogging(() => new Response('quiet', { status: 200 }), {
         disabled: true,
+        logger: mockLogger,
         sink: (entry) => logs.push(entry),
       })
 
       const response = await handler(new Request('http://localhost/silent'))
       expect(response.status).toBe(200)
       expect(logs).toHaveLength(0)
+      expect(mockLogger.info).toHaveBeenCalledTimes(0)
+      expect(mockLogger.warn).toHaveBeenCalledTimes(0)
+      expect(mockLogger.error).toHaveBeenCalledTimes(0)
     })
   })
 })

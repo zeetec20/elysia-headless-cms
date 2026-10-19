@@ -15,11 +15,12 @@ import type {
   UpdateParams,
 } from '@refinedev/core'
 import type { PayloadListResponse } from '@/types'
+import { getStoredAuthToken } from './auth/authToken'
+import { resolvedApiBaseUrl } from './restClient'
 
 const API_URL = '/api'
 
-const getBaseUrl = (): string =>
-  typeof window !== 'undefined' ? '' : (process.env.API_URL ?? 'http://localhost:3000')
+const getBaseUrl = (): string => resolvedApiBaseUrl.replace(/\/$/, '')
 
 export interface PayloadErrorBody {
   message?: string
@@ -73,12 +74,17 @@ const createApiError = (statusCode: number, errorBody: unknown): ApiError => {
 }
 
 const requestJson = async <T>(url: string, init?: RequestInit): Promise<T> => {
+  const token = getStoredAuthToken()
+  const headers = new Headers(init?.headers)
+  if (!headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json')
+  }
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
   const response = await fetch(url, {
     ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
+    headers,
   })
   const body = (await response.json().catch(() => null)) as unknown
   if (!response.ok) {

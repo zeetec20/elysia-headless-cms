@@ -1,3 +1,5 @@
+import type { PayloadLogger } from 'payload'
+
 export type HttpRequestLogLevel = 'info' | 'warn' | 'error'
 
 export interface HttpRequestLogEntry {
@@ -7,14 +9,13 @@ export interface HttpRequestLogEntry {
   status: number
   durationMs: number
   level: HttpRequestLogLevel
-  userAgent?: string | null
-  ip?: string | null
   errorMessage?: string
 }
 
 export type HttpRequestLogSink = (entry: HttpRequestLogEntry) => void
 
 export interface HttpRequestLoggingOptions {
+  logger?: PayloadLogger | (() => PayloadLogger | Promise<PayloadLogger>)
   sink?: HttpRequestLogSink
   disabled?: boolean
 }
@@ -36,35 +37,26 @@ export const resolveHttpRequestLogLevel = (
   return 'info'
 }
 
-const formatHttpRequestTime = (timestamp: string): string => {
-  const parsedDate = new Date(timestamp)
-  if (Number.isNaN(parsedDate.getTime())) {
-    return timestamp
-  }
-  const hours = String(parsedDate.getHours()).padStart(2, '0')
-  const minutes = String(parsedDate.getMinutes()).padStart(2, '0')
-  const seconds = String(parsedDate.getSeconds()).padStart(2, '0')
-  return `${hours}:${minutes}:${seconds}`
-}
-
-export const formatHttpRequestLogMessage = (entry: HttpRequestLogEntry): string => {
-  const time = formatHttpRequestTime(entry.timestamp)
-  const level = entry.level.toUpperCase()
+export const formatHttpRequestLogMessage = (
+  entry: Pick<HttpRequestLogEntry, 'method' | 'path' | 'status' | 'durationMs' | 'errorMessage'>,
+): string => {
   const duration = formatHttpRequestDuration(entry.durationMs)
   const errorSuffix = entry.errorMessage ? ` (error: ${entry.errorMessage})` : ''
-  return `[${time}] [${level}] [HTTP] ${entry.method} ${entry.path} ${entry.status} - ${duration}${errorSuffix}`
+  return `${entry.method} ${entry.path} ${entry.status} - ${duration}${errorSuffix}`
 }
 
 export const writeHttpRequestLog = (
   entry: HttpRequestLogEntry,
   sink?: HttpRequestLogSink,
+  logger?: PayloadLogger,
 ): void => {
   if (sink) {
     sink(entry)
-    return
   }
-  const message = formatHttpRequestLogMessage(entry)
-  console[entry.level](message)
+  if (logger) {
+    const message = formatHttpRequestLogMessage(entry)
+    logger[entry.level](message)
+  }
 }
 
 export type HttpRequestHandler = (request: Request) => Response | Promise<Response>
@@ -81,10 +73,6 @@ export const withHttpRequestLogging = (
     const startTime = performance.now()
     const url = new URL(request.url)
     const path = `${url.pathname}${url.search}`
-    const userAgent = request.headers.get('user-agent')
-    const forwardedFor = request.headers.get('x-forwarded-for')
-    const realIp = request.headers.get('x-real-ip')
-    const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : (realIp ?? null)
 
     let response: Response
     let errorMessage: string | undefined
@@ -108,12 +96,13 @@ export const withHttpRequestLogging = (
       status,
       durationMs,
       level,
-      userAgent,
-      ip,
       ...(errorMessage ? { errorMessage } : {}),
     }
 
-    writeHttpRequestLog(entry, options.sink)
+    const resolvedLogger =
+      typeof options.logger === 'function' ? await options.logger() : options.logger
+
+    writeHttpRequestLog(entry, options.sink, resolvedLogger)
 
     return response
   }
