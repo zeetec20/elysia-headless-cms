@@ -123,6 +123,33 @@ describe('Payload REST API mounted through handleEndpoints', () => {
       const body = await readJsonBody(response)
       expect(body.user).toBeNull()
     })
+
+    it('drops cookie auth for non-allowlisted origins even with Sec-Fetch-Site same-origin', async () => {
+      // NOTE: A drifted dashboard port (e.g. Vite serving on 5174) no longer matches the CSRF
+      // allowlist: extractJWT drops the payload-token cookie whenever an Origin header is
+      // present and not allowlisted, so even a valid session request fails as unauthenticated.
+      const driftedOrigin = 'http://localhost:5174'
+      const postPayload = { title: 'Drifted Port Post', slug: `drifted-${runSuffix}` }
+
+      const driftedResponse = await runRestRequest('/api/posts?depth=0', {
+        method: 'POST',
+        body: JSON.stringify(postPayload),
+        headers: { Cookie: superadminCookie, Origin: driftedOrigin },
+      })
+      expect(driftedResponse.status).toBe(403)
+
+      const allowlistedResponse = await runAuthenticatedRestRequest(
+        superadminCookie,
+        '/api/posts?depth=0',
+        {
+          method: 'POST',
+          body: JSON.stringify(postPayload),
+        },
+      )
+      expect(allowlistedResponse.status).toBe(201)
+      const allowlistedBody = await readJsonBody(allowlistedResponse)
+      createdPostIds.push((allowlistedBody.doc as Record<string, unknown>).id as string)
+    })
   })
 
   describe('posts CRUD and validation', () => {
