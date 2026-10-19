@@ -1,11 +1,10 @@
 import { describe, expect, it, mock } from 'bun:test'
-import { Elysia } from 'elysia'
 import {
-  createHttpRequestLoggingPlugin,
   formatHttpRequestDuration,
   formatHttpRequestLogMessage,
   type HttpRequestLogEntry,
   resolveHttpRequestLogLevel,
+  withHttpRequestLogging,
   writeHttpRequestLog,
 } from '@/utils/httpRequestLoggerUtils'
 
@@ -158,14 +157,15 @@ describe('HTTP Request Logger Utils', () => {
     })
   })
 
-  describe('createHttpRequestLoggingPlugin with Elysia lifecycle', () => {
+  describe('withHttpRequestLogging', () => {
     it('logs successful GET requests with 200 status and info level', async () => {
       const { promise, resolve } = Promise.withResolvers<HttpRequestLogEntry>()
-      const app = new Elysia()
-        .use(createHttpRequestLoggingPlugin({ sink: (entry) => resolve(entry) }))
-        .get('/test', () => ({ ok: true }))
+      const handler = withHttpRequestLogging(
+        () => new Response(JSON.stringify({ ok: true }), { status: 200 }),
+        { sink: (entry) => resolve(entry) },
+      )
 
-      const response = await app.handle(
+      const response = await handler(
         new Request('http://localhost/test?page=1', {
           headers: {
             'user-agent': 'BunTestAgent/1.0',
@@ -187,14 +187,12 @@ describe('HTTP Request Logger Utils', () => {
 
     it('logs routes setting 404 with warn level', async () => {
       const { promise, resolve } = Promise.withResolvers<HttpRequestLogEntry>()
-      const app = new Elysia()
-        .use(createHttpRequestLoggingPlugin({ sink: (entry) => resolve(entry) }))
-        .get('/not-found', ({ set }) => {
-          set.status = 404
-          return { error: 'Not found' }
-        })
+      const handler = withHttpRequestLogging(
+        () => new Response(JSON.stringify({ error: 'Not found' }), { status: 404 }),
+        { sink: (entry) => resolve(entry) },
+      )
 
-      const response = await app.handle(new Request('http://localhost/not-found'))
+      const response = await handler(new Request('http://localhost/not-found'))
       const log = await promise
       expect(response.status).toBe(404)
       expect(log.status).toBe(404)
@@ -203,13 +201,14 @@ describe('HTTP Request Logger Utils', () => {
 
     it('logs route throwing error with 500 status, error level, and errorMessage', async () => {
       const { promise, resolve } = Promise.withResolvers<HttpRequestLogEntry>()
-      const app = new Elysia()
-        .use(createHttpRequestLoggingPlugin({ sink: (entry) => resolve(entry) }))
-        .get('/boom', () => {
+      const handler = withHttpRequestLogging(
+        () => {
           throw new Error('Database connection lost')
-        })
+        },
+        { sink: (entry) => resolve(entry) },
+      )
 
-      const response = await app.handle(new Request('http://localhost/boom'))
+      const response = await handler(new Request('http://localhost/boom'))
       const log = await promise
       expect(response.status).toBe(500)
       expect(log.status).toBe(500)
@@ -218,22 +217,13 @@ describe('HTTP Request Logger Utils', () => {
     })
 
     it('respects disabled option and skips logging', async () => {
-      const { promise, resolve } = Promise.withResolvers<void>()
       const logs: HttpRequestLogEntry[] = []
-      const app = new Elysia()
-        .use(
-          createHttpRequestLoggingPlugin({
-            disabled: true,
-            sink: (entry) => logs.push(entry),
-          }),
-        )
-        .onAfterResponse(() => {
-          resolve()
-        })
-        .get('/silent', () => 'quiet')
+      const handler = withHttpRequestLogging(() => new Response('quiet', { status: 200 }), {
+        disabled: true,
+        sink: (entry) => logs.push(entry),
+      })
 
-      const response = await app.handle(new Request('http://localhost/silent'))
-      await promise
+      const response = await handler(new Request('http://localhost/silent'))
       expect(response.status).toBe(200)
       expect(logs).toHaveLength(0)
     })

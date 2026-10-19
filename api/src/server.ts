@@ -1,18 +1,24 @@
-import { Elysia } from 'elysia'
 import { handleEndpoints } from 'payload'
 
 import configPromise from './payload.config'
-import { httpRequestLoggingPlugin } from './utils/httpRequestLoggerUtils'
+import { withHttpRequestLogging } from './utils/httpRequestLoggerUtils'
 
 const port = Number(process.env.PORT) || 3000
 
-// NOTE: Elysia owns the process lifecycle: Bun stops the HTTP server on SIGINT/SIGTERM
-// Every /api/* method/path delegates directly to Payload's framework-agnostic REST engine
-// (auth, cookies, CORS, CSRF, custom endpoints, OpenAPI docs, errors).
-export const App = new Elysia({ name: 'payload-elysia-api' })
-  .use(httpRequestLoggingPlugin)
-  .all('/api/*', ({ request }) => handleEndpoints({ config: configPromise, request }))
+const handleApiEndpoint = async (request: Request): Promise<Response> => {
+  const url = new URL(request.url)
+  if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
+    return handleEndpoints({ config: configPromise, request })
+  }
+  return new Response('Not Found', { status: 404 })
+}
 
+export const handleApiRequest = withHttpRequestLogging(handleApiEndpoint)
+
+export const App = {
+  handle: handleApiRequest,
+  fetch: handleApiRequest,
+}
 export type {
   PayloadListResponse,
   PayloadLoginResponse,
@@ -20,6 +26,6 @@ export type {
 } from './types/apiResponseTypes'
 
 if (import.meta.main) {
-  App.listen(port)
-  console.log(`✓ Payload REST API (Elysia on Bun) listening on http://localhost:${port}/api`)
+  Bun.serve({ port, fetch: handleApiRequest })
+  console.log(`✓ Payload REST API (Bun.serve) listening on http://localhost:${port}/api`)
 }

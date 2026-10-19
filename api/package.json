@@ -36,9 +36,7 @@
   "dependencies": {
     "@payloadcms/db-postgres": "^3.91.0",
     "@payloadcms/richtext-lexical": "^3.91.0",
-    "@sinclair/typebox": "0.34.52",
     "drizzle-orm": "0.45.2",
-    "elysia": "^1.4.30",
     "payload": "^3.91.0",
     "payload-oapi": "^0.3.1"
   },

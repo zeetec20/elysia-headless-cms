@@ -41,7 +41,7 @@ const loginThroughApiRoute = async (email: string, password: string): Promise<st
   return extractTokenCookie(response)
 }
 
-describe('Direct REST API engine on Elysia HTTP server', () => {
+describe('Direct REST API engine on Bun native HTTP server', () => {
   let superadminCookie = ''
   let guestCookie = ''
   const createdPostIds: string[] = []

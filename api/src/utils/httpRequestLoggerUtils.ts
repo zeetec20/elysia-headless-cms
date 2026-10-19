@@ -1,5 +1,3 @@
-import type { Elysia } from 'elysia'
-
 export type HttpRequestLogLevel = 'info' | 'warn' | 'error'
 
 export interface HttpRequestLogEntry {
@@ -69,70 +67,54 @@ export const writeHttpRequestLog = (
   console[entry.level](message)
 }
 
-const resolveResponseStatusCode = (response: unknown, setStatus: unknown): number => {
-  if (response instanceof Response) {
-    return response.status
-  }
-  if (typeof setStatus === 'number') {
-    return setStatus
-  }
-  if (typeof setStatus === 'string') {
-    const parsed = Number.parseInt(setStatus, 10)
-    if (!Number.isNaN(parsed)) return parsed
-  }
-  return 200
-}
+export type HttpRequestHandler = (request: Request) => Response | Promise<Response>
 
-export const createHttpRequestLoggingPlugin = (options: HttpRequestLoggingOptions = {}) => {
+export const withHttpRequestLogging = (
+  handler: HttpRequestHandler,
+  options: HttpRequestLoggingOptions = {},
+): HttpRequestHandler => {
   if (options.disabled) {
-    return (app: Elysia) => app
+    return handler
   }
 
-  const startTimes = new WeakMap<Request, number>()
-  const errors = new WeakMap<Request, string>()
+  return async (request: Request): Promise<Response> => {
+    const startTime = performance.now()
+    const url = new URL(request.url)
+    const path = `${url.pathname}${url.search}`
+    const userAgent = request.headers.get('user-agent')
+    const forwardedFor = request.headers.get('x-forwarded-for')
+    const realIp = request.headers.get('x-real-ip')
+    const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : (realIp ?? null)
 
-  return (app: Elysia) =>
-    app
-      .onRequest(({ request }) => {
-        startTimes.set(request, performance.now())
-      })
-      .onError(({ request, error }) => {
-        const message = error instanceof Error ? error.message : String(error)
-        errors.set(request, message)
-      })
-      .onAfterResponse(({ request, response, set }) => {
-        const startTime = startTimes.get(request)
-        const durationMs = startTime !== undefined ? performance.now() - startTime : 0
-        startTimes.delete(request)
+    let response: Response
+    let errorMessage: string | undefined
 
-        const errorMessage = errors.get(request)
-        errors.delete(request)
+    try {
+      response = await handler(request)
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : String(error)
+      response = new Response('Internal Server Error', { status: 500 })
+    }
 
-        const status = resolveResponseStatusCode(response, set.status)
-        const hasError = status >= 500 || (errorMessage !== undefined && status !== 404)
-        const level = resolveHttpRequestLogLevel(status, hasError)
+    const durationMs = performance.now() - startTime
+    const status = response.status
+    const hasError = status >= 500 || (errorMessage !== undefined && status !== 404)
+    const level = resolveHttpRequestLogLevel(status, hasError)
 
-        const url = new URL(request.url)
-        const path = `${url.pathname}${url.search}`
-        const userAgent = request.headers.get('user-agent')
-        const forwardedFor = request.headers.get('x-forwarded-for')
-        const realIp = request.headers.get('x-real-ip')
-        const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : (realIp ?? null)
+    const entry: HttpRequestLogEntry = {
+      timestamp: new Date().toISOString(),
+      method: request.method,
+      path,
+      status,
+      durationMs,
+      level,
+      userAgent,
+      ip,
+      ...(errorMessage ? { errorMessage } : {}),
+    }
 
-        const entry: HttpRequestLogEntry = {
-          timestamp: new Date().toISOString(),
-          method: request.method,
-          path,
-          status,
-          durationMs,
-          level,
-          userAgent,
-          ip,
-          ...(errorMessage ? { errorMessage } : {}),
-        }
+    writeHttpRequestLog(entry, options.sink)
 
-        writeHttpRequestLog(entry, options.sink)
-      })
+    return response
+  }
 }
-
-export const httpRequestLoggingPlugin = createHttpRequestLoggingPlugin()
