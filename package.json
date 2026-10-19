@@ -1,0 +1,25 @@
+{
+  "name": "payload-elysia-refine",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "bun@1.3.14",
+  "workspaces": [
+    "api",
+    "dashboard"
+  ],
+  "scripts": {
+    "dev": "bun --cwd api dev",
+    "dev:api": "bun --cwd api dev",
+    "dev:dashboard": "bun --cwd dashboard dev",
+    "build:dashboard": "bun --cwd dashboard build",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "test": "bun --cwd api test",
+    "verify": "bun --cwd api test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@types/bun": "latest",
+    "typescript": "^5.7.0"
+  }
+}

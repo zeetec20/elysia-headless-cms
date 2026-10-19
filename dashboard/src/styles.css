@@ -1,0 +1,73 @@
+/* Payload-like plain admin styling for the Refine dashboard */
+
+body {
+  margin: 0;
+}
+
+.lexical-editor-wrapper {
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.lexical-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #d9d9d9;
+  background: #fafafa;
+}
+
+.lexical-editor-input {
+  min-height: 220px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding: 12px 14px;
+  outline: none;
+}
+
+.lexical-editor-input:focus {
+  outline: none;
+}
+
+.lexical-editor-placeholder {
+  color: #bfbfbf;
+  pointer-events: none;
+}
+
+.lexical-editor-input h1 {
+  font-size: 1.6em;
+  font-weight: 600;
+  margin: 0.5em 0 0.3em;
+}
+
+.lexical-editor-input h2 {
+  font-size: 1.35em;
+  font-weight: 600;
+  margin: 0.5em 0 0.3em;
+}
+
+.lexical-editor-input h3 {
+  font-size: 1.15em;
+  font-weight: 600;
+  margin: 0.5em 0 0.3em;
+}
+
+.lexical-editor-input blockquote {
+  border-left: 3px solid #d9d9d9;
+  margin: 0.4em 0;
+  padding-left: 12px;
+  color: #555;
+}
+
+.lexical-editor-input p {
+  margin: 0.35em 0;
+}
+
+.lexical-editor-input ul,
+.lexical-editor-input ol {
+  padding-left: 24px;
+  margin: 0.35em 0;
+}

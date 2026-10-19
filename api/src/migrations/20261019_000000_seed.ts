@@ -1,0 +1,111 @@
+import type { MigrateDownArgs, MigrateUpArgs } from '@payloadcms/db-postgres'
+
+export const up = async ({ payload, req }: MigrateUpArgs): Promise<void> => {
+  const existingUsers = await payload.find({
+    collection: 'users',
+    where: {
+      email: {
+        equals: 'admin@example.com',
+      },
+    },
+    limit: 1,
+    req,
+  })
+
+  if (existingUsers.totalDocs === 0) {
+    await payload.create({
+      collection: 'users',
+      data: {
+        email: 'admin@example.com',
+        password: 'password123',
+        role: 'superadmin',
+      },
+      context: { system: true },
+      req,
+    })
+    payload.logger.info('✓ Seeded initial admin user: admin@example.com / password123')
+  } else {
+    await payload.update({
+      collection: 'users',
+      id: existingUsers.docs[0].id,
+      data: {
+        role: 'superadmin',
+      },
+      context: { system: true },
+      req,
+    })
+    payload.logger.info('✓ Updated initial admin user to superadmin role')
+  }
+
+  const existingPosts = await payload.find({
+    collection: 'posts',
+    where: {
+      slug: {
+        equals: 'hello-world',
+      },
+    },
+    limit: 1,
+    req,
+  })
+
+  if (existingPosts.totalDocs === 0) {
+    await payload.create({
+      collection: 'posts',
+      data: {
+        title: 'Hello World from Bun',
+        slug: 'hello-world',
+        status: 'published',
+        publishedAt: new Date().toISOString(),
+        content: {
+          root: {
+            type: 'root',
+            children: [
+              {
+                type: 'paragraph',
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Payload CMS is running natively on the Bun runtime with PostgreSQL storage.',
+                    version: 1,
+                  },
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            version: 1,
+          },
+        },
+      },
+      req,
+    })
+    payload.logger.info('✓ Seeded initial sample post: "Hello World from Bun"')
+  }
+}
+
+export const down = async ({ payload, req }: MigrateDownArgs): Promise<void> => {
+  await payload.delete({
+    collection: 'posts',
+    where: {
+      slug: {
+        equals: 'hello-world',
+      },
+    },
+    req,
+  })
+
+  await payload.delete({
+    collection: 'users',
+    where: {
+      email: {
+        equals: 'admin@example.com',
+      },
+    },
+    req,
+  })
+}
