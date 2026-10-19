@@ -1,5 +1,7 @@
+import { Elysia } from 'elysia'
 import { getPayload, handleEndpoints } from 'payload'
 
+import { executePendingDatabaseMigrations } from './migrations/runPendingMigrations'
 import configPromise from './payload.config'
 import { withHttpRequestLogging } from './utils/httpRequestLoggerUtils'
 
@@ -27,10 +29,9 @@ export const handleApiRequest = withHttpRequestLogging(handleApiEndpoint, {
   },
 })
 
-export const App = {
-  handle: handleApiRequest,
-  fetch: handleApiRequest,
-}
+export const App = new Elysia({ name: 'payload-elysia-api' })
+  .all('/api/*', ({ request }) => handleApiRequest(request))
+  .all('/api', ({ request }) => handleApiRequest(request))
 export type {
   PayloadListResponse,
   PayloadLoginResponse,
@@ -38,6 +39,12 @@ export type {
 } from './types/apiResponseTypes'
 
 if (import.meta.main) {
-  Bun.serve({ port, fetch: handleApiRequest })
-  console.log(`✓ Payload REST API (Bun.serve) listening on http://localhost:${port}/api`)
+  try {
+    const payload = await payloadPromise
+    await executePendingDatabaseMigrations(payload)
+  } catch (error) {
+    console.error('Failed to run pending database migrations on startup:', error)
+  }
+  App.listen(port)
+  console.log(`✓ Payload REST API (Elysia) listening on http://localhost:${port}/api`)
 }

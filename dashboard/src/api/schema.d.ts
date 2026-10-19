@@ -136,50 +136,6 @@ export interface paths {
         patch: operations["updatePayloadKv"];
         trace?: never;
     };
-    "/api/payload-locked-documents": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieve a list of Payload Locked Documents */
-        get: operations["listPayloadLockedDocuments"];
-        put?: never;
-        /** Create a new Payload Locked Document */
-        post: operations["createPayloadLockedDocument"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/payload-locked-documents/{id}": {
-        parameters: {
-            query?: {
-                depth?: number;
-                locale?: string;
-                "fallback-locale"?: string;
-            };
-            header?: never;
-            path: {
-                /** @description ID of the Payload Locked Document */
-                id: string;
-            };
-            cookie?: never;
-        };
-        /** Find a Payload Locked Document by ID */
-        get: operations["findPayloadLockedDocumentById"];
-        put?: never;
-        post?: never;
-        /** Delete a Payload Locked Document */
-        delete: operations["deletePayloadLockedDocument"];
-        options?: never;
-        head?: never;
-        /** Update a Payload Locked Document */
-        patch: operations["updatePayloadLockedDocument"];
-        trace?: never;
-    };
     "/api/payload-preferences": {
         parameters: {
             query?: never;
@@ -540,27 +496,6 @@ export interface components {
             key: string;
             data: (Record<string, never> | unknown[] | string | number | boolean) | null;
         };
-        /** Payload Locked Document */
-        PayloadLockedDocument: {
-            id: string;
-            document?: ({
-                /** @enum {unknown} */
-                relationTo: "users";
-                value: string | components["schemas"]["User"];
-            } | null) | ({
-                /** @enum {unknown} */
-                relationTo: "posts";
-                value: string | components["schemas"]["Post"];
-            } | null);
-            globalSlug?: string | null;
-            user: {
-                /** @enum {unknown} */
-                relationTo: "users";
-                value: string | components["schemas"]["User"];
-            };
-            updatedAt: string;
-            createdAt: string;
-        };
         /** Payload Preference */
         PayloadPreference: {
             id: string;
@@ -854,57 +789,6 @@ export interface components {
         /** Payload Kv query disjunction */
         PayloadKvQueryOperationsOr: {
             or: (components["schemas"]["PayloadKvQueryOperations"] | components["schemas"]["PayloadKvQueryOperationsAnd"] | components["schemas"]["PayloadKvQueryOperationsOr"])[];
-        };
-        /** Payload Locked Document query operations */
-        PayloadLockedDocumentQueryOperations: {
-            globalSlug?: {
-                equals?: string;
-                not_equals?: string;
-                in?: string;
-                not_in?: string;
-                like?: string;
-                contains?: string;
-            };
-            updatedAt?: {
-                /** Format: date-time */
-                equals?: string;
-                /** Format: date-time */
-                not_equals?: string;
-                in?: string;
-                not_in?: string;
-                /** Format: date-time */
-                greater_than?: string;
-                /** Format: date-time */
-                greater_than_equal?: string;
-                /** Format: date-time */
-                less_than?: string;
-                /** Format: date-time */
-                less_than_equal?: string;
-            };
-            createdAt?: {
-                /** Format: date-time */
-                equals?: string;
-                /** Format: date-time */
-                not_equals?: string;
-                in?: string;
-                not_in?: string;
-                /** Format: date-time */
-                greater_than?: string;
-                /** Format: date-time */
-                greater_than_equal?: string;
-                /** Format: date-time */
-                less_than?: string;
-                /** Format: date-time */
-                less_than_equal?: string;
-            };
-        };
-        /** Payload Locked Document query conjunction */
-        PayloadLockedDocumentQueryOperationsAnd: {
-            and: (components["schemas"]["PayloadLockedDocumentQueryOperations"] | components["schemas"]["PayloadLockedDocumentQueryOperationsAnd"] | components["schemas"]["PayloadLockedDocumentQueryOperationsOr"])[];
-        };
-        /** Payload Locked Document query disjunction */
-        PayloadLockedDocumentQueryOperationsOr: {
-            or: (components["schemas"]["PayloadLockedDocumentQueryOperations"] | components["schemas"]["PayloadLockedDocumentQueryOperationsAnd"] | components["schemas"]["PayloadLockedDocumentQueryOperationsOr"])[];
         };
         /** Payload Preference query operations */
         PayloadPreferenceQueryOperations: {
@@ -1214,60 +1098,6 @@ export interface components {
                 };
             };
         };
-        /** @description Payload Locked Document object */
-        PayloadLockedDocumentResponse: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["PayloadLockedDocument"];
-            };
-        };
-        /** @description Payload Locked Document object */
-        MutatePayloadLockedDocumentResponse: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": {
-                    message: string;
-                    doc: components["schemas"]["PayloadLockedDocument"] & {
-                        id: string;
-                        /** Format: date-time */
-                        createdAt: string;
-                        /** Format: date-time */
-                        updatedAt: string;
-                    };
-                };
-            };
-        };
-        /** @description Payload Locked Document not found */
-        PayloadLockedDocumentNotFoundResponse: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content?: never;
-        };
-        /** @description List of Payload Locked Documents */
-        PayloadLockedDocumentListResponse: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": {
-                    docs: components["schemas"]["PayloadLockedDocument"][];
-                    totalDocs: number;
-                    limit: number;
-                    totalPages: number;
-                    page: number;
-                    pagingCounter: number;
-                    hasPrevPage: boolean;
-                    hasNextPage: boolean;
-                    prevPage: number | null;
-                    nextPage: number | null;
-                };
-            };
-        };
         /** @description Payload Preference object */
         PayloadPreferenceResponse: {
             headers: {
@@ -1555,30 +1385,6 @@ export interface components {
                 "application/json": {
                     key?: string;
                     data?: (Record<string, never> | unknown[] | string | number | boolean) | null;
-                };
-            };
-        };
-        /** @description Payload Locked Document */
-        PayloadLockedDocumentRequestBody: {
-            content: {
-                "application/json": {
-                    /** @description ID of the users/posts */
-                    document?: string;
-                    globalSlug?: string | null;
-                    /** @description ID of the users */
-                    user: string;
-                };
-            };
-        };
-        /** @description Payload Locked Document */
-        PayloadLockedDocumentPatchRequestBody: {
-            content: {
-                "application/json": {
-                    /** @description ID of the users/posts */
-                    document?: string;
-                    globalSlug?: string | null;
-                    /** @description ID of the users */
-                    user?: string;
                 };
             };
         };
@@ -1945,100 +1751,6 @@ export interface operations {
         responses: {
             200: components["responses"]["PayloadKvResponse"];
             404: components["responses"]["PayloadKvNotFoundResponse"];
-        };
-    };
-    listPayloadLockedDocuments: {
-        parameters: {
-            query?: {
-                page?: number;
-                limit?: number;
-                depth?: number;
-                locale?: string;
-                "fallback-locale"?: string;
-                sort?: "globalSlug" | "-globalSlug" | "updatedAt" | "-updatedAt" | "createdAt" | "-createdAt";
-                where?: Record<string, never> & (components["schemas"]["PayloadLockedDocumentQueryOperations"] | components["schemas"]["PayloadLockedDocumentQueryOperationsAnd"] | components["schemas"]["PayloadLockedDocumentQueryOperationsOr"]);
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["PayloadLockedDocumentListResponse"];
-        };
-    };
-    createPayloadLockedDocument: {
-        parameters: {
-            query?: {
-                depth?: number;
-                locale?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: components["requestBodies"]["PayloadLockedDocumentRequestBody"];
-        responses: {
-            201: components["responses"]["MutatePayloadLockedDocumentResponse"];
-        };
-    };
-    findPayloadLockedDocumentById: {
-        parameters: {
-            query?: {
-                depth?: number;
-                locale?: string;
-                "fallback-locale"?: string;
-            };
-            header?: never;
-            path: {
-                /** @description ID of the Payload Locked Document */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["MutatePayloadLockedDocumentResponse"];
-        };
-    };
-    deletePayloadLockedDocument: {
-        parameters: {
-            query?: {
-                depth?: number;
-                locale?: string;
-                "fallback-locale"?: string;
-            };
-            header?: never;
-            path: {
-                /** @description ID of the Payload Locked Document */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["PayloadLockedDocumentResponse"];
-            404: components["responses"]["PayloadLockedDocumentNotFoundResponse"];
-        };
-    };
-    updatePayloadLockedDocument: {
-        parameters: {
-            query?: {
-                depth?: number;
-                locale?: string;
-                "fallback-locale"?: string;
-            };
-            header?: never;
-            path: {
-                /** @description ID of the Payload Locked Document */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: components["requestBodies"]["PayloadLockedDocumentPatchRequestBody"];
-        responses: {
-            200: components["responses"]["PayloadLockedDocumentResponse"];
-            404: components["responses"]["PayloadLockedDocumentNotFoundResponse"];
         };
     };
     listPayloadPreferences: {

@@ -24,7 +24,6 @@
     "lint:fix": "biome check --write .",
     "generate:types": "bun --conditions=development ./node_modules/payload/bin.js generate:types --disable-transpile",
     "generate:openapi": "bun --conditions=development scripts/generate-openapi.ts",
-    "seed": "bun --conditions=development scripts/seed.ts",
     "migrate": "bun --conditions=development ./node_modules/payload/bin.js migrate --disable-transpile",
     "migrate:status": "bun --conditions=development ./node_modules/payload/bin.js migrate:status --disable-transpile",
     "migrate:create": "bun --conditions=development ./node_modules/payload/bin.js migrate:create --disable-transpile",
@@ -37,6 +36,7 @@
     "@payloadcms/db-postgres": "^3.91.0",
     "@payloadcms/richtext-lexical": "^3.91.0",
     "drizzle-orm": "0.45.2",
+    "elysia": "^1.4.30",
     "payload": "^3.91.0",
     "payload-oapi": "^0.3.1"
   },

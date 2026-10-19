@@ -19,7 +19,6 @@ HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
   CMD bun --eval "fetch('http://localhost:3000/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
 
 # NOTE: --conditions=development is mandatory at runtime: payload's published ESM bundles only
-# resolve their internal circular imports via the development conditions under Bun. The bootstrap
-# seed is idempotent: on a fresh database it creates the schema (dev-mode push), the first
-# superadmin and the sample post; on an existing database it is a no-op.
-CMD ["sh", "-c", "cd api && bun --conditions=development scripts/seed.ts && exec bun --conditions=development src/server.ts"]
+# resolve their internal circular imports via the development conditions under Bun. Database
+# migrations run automatically on server boot via executePendingDatabaseMigrations.
+CMD ["sh", "-c", "cd api && exec bun --conditions=development src/server.ts"]

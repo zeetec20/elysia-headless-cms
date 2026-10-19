@@ -51,10 +51,17 @@ const runLadderLevel = async (args: {
 }
 
 const run = async (): Promise<void> => {
-  const token = (await loginPayloadForBenchToken(benchTargets[0].baseUrl)).token
-  console.log(`payload auth token acquired: ${token.slice(0, 12)}...`)
+  const selectedTargets = process.env.BENCH_TARGET
+    ? benchTargets.filter((target) => target.name === process.env.BENCH_TARGET)
+    : benchTargets
 
-  const rows = await runBenchSequentially(benchTargets, async (target) => {
+  const payloadTarget = selectedTargets.find((target) => target.name === 'payload')
+  if (payloadTarget) {
+    const token = (await loginPayloadForBenchToken(payloadTarget.baseUrl)).token
+    console.log(`payload auth token acquired: ${token.slice(0, 12)}...`)
+  }
+
+  const rows = await runBenchSequentially(selectedTargets, async (target) => {
     const serverPid = resolveListeningPid(target.baseUrl)
     console.log(`\n=== ${target.label} (pid ${serverPid}) ===`)
 
@@ -75,7 +82,7 @@ const run = async (): Promise<void> => {
   console.log(table)
 
   const healthChecks = await Promise.all(
-    benchTargets.map(async (target) => {
+    selectedTargets.map(async (target) => {
       const { status } = await fetchJsonStatus(`${target.baseUrl}${target.listUrl(1, false)}`)
 
       return `${target.name} post-stress single request: ${status}`

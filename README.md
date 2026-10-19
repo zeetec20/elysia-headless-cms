@@ -15,7 +15,7 @@ payload-elysia-refine/
 graph LR
   UI["Refine Dashboard<br/>React 19 + Antd 5<br/>(:5173)"]
   Vite["Vite Reverse Proxy<br/>(/api)"]
-  API["Bun + Payload 3 Headless<br/>REST Engine (:3000)"]
+  API["Bun + Elysia REST Engine<br/>Payload 3 Headless (:3000)"]
   DB[("PostgreSQL 17<br/>UUIDv7")]
 
   UI -- "dev: /api" --> Vite
@@ -24,7 +24,7 @@ graph LR
   API --> DB
 ```
 
-- ⚡ **API**: Headless Payload 3 REST engine on Bun `Bun.serve` (no admin UI, no Next.js).
+- ⚡ **API**: Headless Payload 3 REST engine on Bun + Elysia (no admin UI, no Next.js).
 - 🔒 **Auth**: Superadmin JWT Bearer token authentication (`Authorization: Bearer <token>`).
 - 📊 **Database**: PostgreSQL with UUID v7 ids and Drizzle custom aggregations (`/api/posts/stats`).
 - 🧭 **Docs**: Scalar OpenAPI interactive docs at `/docs` (basic-auth secured by `APP_ENV`).
@@ -49,13 +49,9 @@ bun run dev:api       # http://localhost:3000/api
 bun run dev:dashboard # separately: Refine dashboard on http://localhost:5173
 ```
 
-Seed the first admin + sample post (idempotent):
+Migrations (including seeding the initial superadmin and sample post via `api/src/migrations/20261019_000000_seed.ts`) execute automatically on server boot.
 
-```bash
-bun --cwd api -- run seed     # see api/package.json; equivalently: cd api && bun run seed
-```
-
-Login: `admin@example.com` / `password123`
+Default superadmin login: `admin@example.com` / `password123`
 
 ## Scripts
 
@@ -66,7 +62,7 @@ Login: `admin@example.com` / `password123`
 | root | `bun run dev:api` / `dev:dashboard` | Run one server each |
 | api/ | `bun run generate:types` | Regenerate `src/payload-types.ts` |
 | api/ | `bun run generate:openapi` | Write `openapi.json` from the `/openapi.json` endpoint |
-| api/ | `bun run seed` | Idempotent first-user + sample-post seeding |
+| api/ | `bun run migrate:status` | Check applied and pending migration status |
 | dashboard/ | `bun run typecheck` | `tsc --noEmit` |
 
 ## Environment variables
@@ -97,7 +93,7 @@ docker compose up --build
 # → db (postgres:17-alpine, healthcheck) + api on http://localhost:3000/api
 ```
 
-First startup runs the idempotent seed (`dev`-conditions schema push + first superadmin `admin@example.com` / `password123` + sample post) and then serves. For a standalone image: `docker build -t payload-elysia-api .` and supply `DATABASE_URI` / `PGUSER` / `PAYLOAD_SECRET` / `DASHBOARD_URL` yourself (hosted Postgres like Neon/Railway works — no compose needed, just the connection string).
+First startup executes pending database migrations automatically (including initial superadmin `admin@example.com` / `password123` and sample post) and then serves. For a standalone image: `docker build -t payload-elysia-api .` and supply `DATABASE_URI` / `PGUSER` / `PAYLOAD_SECRET` / `DASHBOARD_URL` yourself (hosted Postgres like Neon/Railway works — no compose needed, just the connection string).
 
 > Note: this image was authored without a locally available Docker daemon — smoke-test it on your deployment host before relying on it.
 
@@ -110,6 +106,6 @@ First startup runs the idempotent seed (`dev`-conditions schema push + first sup
 ## Notes
 
 - **Why `--conditions=development` everywhere**: payload packages ship a dev-bundle ESM build that resolves their circular imports correctly under Bun; CLI scripts in the source project carry the same flag.
-- **Seeding**: `payload migrate` prompts interactively ("data loss") when the dev schema push already created the schema, so seeding runs through the local API script instead. `api/src/migrations/20261019_000000_seed.ts` keeps the same seed logic for migration-based flows.
+- **Migrations & Seeding**: Database migrations in `api/src/migrations/*.ts` run automatically on server startup via `executePendingDatabaseMigrations`. `20261019_000000_seed.ts` seeds the superadmin user and initial post idempotently.
 - **Cookie auth & CSRF**: Payload's `extractJWT` rejects cookie auth unless the request Origin is in `config.csrf` or carries `Sec-Fetch-Site: same-origin`. The dashboard origin (`http://localhost:5173`) is allowlisted for direct cross-origin use; browsers behind the Vite proxy pass through the same-origin path automatically.
 - **No GraphQL, uploads, globals, drafts/versions** — deliberately out of scope of the source project's API surface.

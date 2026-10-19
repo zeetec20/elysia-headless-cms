@@ -82,17 +82,22 @@ const runSteadyStateScenario = async (args: {
 }
 
 const run = async (): Promise<void> => {
-  const payloadToken = (await loginPayloadForBenchToken(benchTargets[0].baseUrl)).token
-  const payloadDocumentId = await discoverFirstDocumentId(benchTargets[0])
-  const strapiDocumentId = await discoverFirstDocumentId(benchTargets[1])
+  const selectedTargets = process.env.BENCH_TARGET
+    ? benchTargets.filter((target) => target.name === process.env.BENCH_TARGET)
+    : benchTargets
 
-  const documentIds: Record<string, string> = {
-    payload: payloadDocumentId,
-    strapi: strapiDocumentId,
-  }
+  const payloadTarget = selectedTargets.find((target) => target.name === 'payload')
+  const payloadToken = payloadTarget
+    ? (await loginPayloadForBenchToken(payloadTarget.baseUrl)).token
+    : ''
+
+  const documentIdsEntries = await Promise.all(
+    selectedTargets.map(async (target) => [target.name, await discoverFirstDocumentId(target)]),
+  )
+  const documentIds = Object.fromEntries(documentIdsEntries)
 
   const sharedRows = await runBenchSequentially(
-    benchTargets.flatMap((target) =>
+    selectedTargets.flatMap((target) =>
       steadyStateScenarios.map((scenario) => ({ target, scenario })),
     ),
     ({ target, scenario }) =>
@@ -104,15 +109,16 @@ const run = async (): Promise<void> => {
       }),
   )
 
-  const payloadTarget = benchTargets[0]
-  const payloadOnlyRows = await runBenchSequentially(payloadOnlyScenarios, (scenario) =>
-    runSteadyStateScenario({
-      target: payloadTarget,
-      scenario,
-      documentId: payloadDocumentId,
-      token: payloadToken,
-    }),
-  )
+  const payloadOnlyRows = payloadTarget
+    ? await runBenchSequentially(payloadOnlyScenarios, (scenario) =>
+        runSteadyStateScenario({
+          target: payloadTarget,
+          scenario,
+          documentId: documentIds.payload,
+          token: payloadToken,
+        }),
+      )
+    : []
 
   const rows = [...sharedRows, ...payloadOnlyRows]
   const table = formatBenchTable(rows)

@@ -35,6 +35,7 @@ export const protectUserRoleBeforeChange: CollectionBeforeChangeHook = ({
 
 export const Users: CustomCollectionConfig = {
   slug: 'users',
+  lockDocuments: false,
   // NOTE: Marks Users as canonical auth/identity collection (sessions, API keys, /login, /me). Content collections like Posts must never define auth.
   auth: {
     useAPIKey: true,

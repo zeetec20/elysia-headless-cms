@@ -79,12 +79,13 @@ export default buildConfig({
   },
   db: postgresAdapter({
     idType: 'uuidv7',
+    migrationDir: path.resolve(dirname, 'migrations'),
     pool: {
       connectionString: databaseUri,
       user: process.env.PGUSER || 'postgres',
-      max: 20,
+      max: Number(process.env.DB_POOL_MAX) || 20,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
+      connectionTimeoutMillis: Number(process.env.DB_CONNECTION_TIMEOUT_MS) || 10000,
     },
   }),
 })

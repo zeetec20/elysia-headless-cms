@@ -4,6 +4,7 @@ import { validatePostSlugField, validatePostTitleField } from '../validations/po
 
 export const Posts: CustomCollectionConfig = {
   slug: 'posts',
+  lockDocuments: false,
   access: {
     admin: ({ req: { user } }) => user?.role === 'superadmin',
     read: () => true,
