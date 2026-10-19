@@ -18,7 +18,7 @@
     }
   },
   "scripts": {
-    "dev": "bun --conditions=development src/server.ts",
+    "dev": "bun --watch --conditions=development src/server.ts",
     "start": "bun --conditions=development src/server.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
@@ -31,8 +31,7 @@
     "migrate:down": "bun --conditions=development ./node_modules/payload/bin.js migrate:down --disable-transpile",
     "migrate:refresh": "bun --conditions=development ./node_modules/payload/bin.js migrate:refresh --disable-transpile",
     "migrate:reset": "bun --conditions=development ./node_modules/payload/bin.js migrate:reset --disable-transpile",
-    "test": "bun --conditions=development test",
-    "verify": "bun --conditions=development test"
+    "test": "bun --conditions=development test"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.91.0",

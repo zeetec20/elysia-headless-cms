@@ -15,7 +15,8 @@
       "!**/payload-types.ts",
       "!**/importMap.js",
       "!**/bun.lock",
-      "!**/openapi.json"
+      "!**/openapi.json",
+      "!**/schema.d.ts"
     ]
   },
   "formatter": {
