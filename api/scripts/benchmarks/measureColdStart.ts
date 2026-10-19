@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { resolveListeningPid, runBenchSequentially, toMegabytes, waitForHttpOk } from './benchUtils'
 
 interface ColdStartSample {
@@ -9,6 +10,8 @@ interface ColdStartSample {
 }
 
 const resultsDirectory = '.omo/bench'
+const apiDir = path.resolve(import.meta.dir, '../..')
+const strapiDir = process.env.STRAPI_BENCH_CWD || path.resolve(apiDir, '../../strapi-bench')
 
 const scenarios: Record<
   string,
@@ -16,7 +19,7 @@ const scenarios: Record<
 > = {
   payload: {
     command: ['bun', '--conditions=development', 'src/server.ts'],
-    cwd: '/Users/zeetec/project/payload-elysia-refine/api',
+    cwd: apiDir,
     url: 'http://127.0.0.1:3100/api/posts?limit=1',
     env: {
       DATABASE_URI: 'postgres://postgres@127.0.0.1:5432/bench_payload',
@@ -25,7 +28,7 @@ const scenarios: Record<
   },
   strapi: {
     command: ['npm', 'run', 'start'],
-    cwd: '/Users/zeetec/project/strapi-bench',
+    cwd: strapiDir,
     url: 'http://127.0.0.1:1337/api/posts?pagination%5BpageSize%5D=1',
     env: {},
   },
