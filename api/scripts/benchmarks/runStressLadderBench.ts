@@ -22,6 +22,7 @@ const ladderLevels = (process.env.BENCH_LADDER ?? '10,25,50,100,200,400,800,1200
 const levelDurationSeconds = Number(process.env.BENCH_LADDER_DURATION ?? 20)
 const warmupSeconds = Number(process.env.BENCH_WARMUP ?? 5)
 const resultsDirectory = '.omo/bench'
+const tierCooldownMs = Number(process.env.BENCH_TIER_COOLDOWN_MS ?? 6000)
 
 const runLadderLevel = async (args: {
   target: BenchTargetDefinition
@@ -31,12 +32,13 @@ const runLadderLevel = async (args: {
   const { target, serverPid, connections } = args
   const url = `${target.baseUrl}${target.listUrl(10, false)}`
 
-  await runAutocannon({ url, connections: 10, durationSec: warmupSeconds })
   const summary = await runAutocannon({
     url,
     connections,
     durationSec: levelDurationSeconds,
   })
+
+  await Bun.sleep(tierCooldownMs)
 
   return {
     suite: 'stress-ladder',
@@ -65,6 +67,15 @@ const run = async (): Promise<void> => {
     const serverPid = resolveListeningPid(target.baseUrl)
     console.log(`\n=== ${target.label} (pid ${serverPid}) ===`)
 
+    if (warmupSeconds > 0) {
+      console.log(`warming up ${target.name} for ${warmupSeconds}s...`)
+      await runAutocannon({
+        url: `${target.baseUrl}${target.listUrl(10, false)}`,
+        connections: 10,
+        durationSec: warmupSeconds,
+      })
+      await Bun.sleep(tierCooldownMs)
+    }
     return runBenchSequentially(ladderLevels, (connections) =>
       runLadderLevel({ target, serverPid, connections }),
     )

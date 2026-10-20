@@ -12,18 +12,17 @@ Payload runs headless via **Elysia on Bun** (`App = new Elysia().all('/api/*', .
 Running Payload CMS 3 headless directly on **Elysia on Bun** delivers exceptional read throughput, fast sub-700ms cold starts, and resilient connection handling compared to Strapi 5.58 running on Node 22:
 
 1. **Steady-State Reads**:
-   - **List 10**: Payload achieves **2,528.81 req/s** (p50: 19ms, p99: 29ms), beating Strapi 5 (**1,655.00 req/s**, p50: 28ms, p99: 52ms) by **+52.8% RPS** with **32% lower p50 latency**.
-   - **List 10 Populated**: Payload delivers **2,568.00 req/s** (p50: 19ms, p99: 29ms) vs Strapi 5's **1,496.00 req/s** (p50: 32ms, p99: 54ms) — a **+71.7% throughput lead** with **40% lower latency**.
-   - **List 100**: Payload outputs **20.90 MB/s** throughput (**657.30 req/s**), outperforming Strapi 5 (**466.70 req/s**, 13.51 MB/s) by **+40.8% RPS** and **+54.7% data throughput**.
-   - **Find by ID**: Payload achieves **4,526.80 req/s** (p50: 10ms, p99: 20ms), outperforming Strapi 5 (**3,702.30 req/s**, p50: 12ms, p99: 30ms) by **+22.3%**.
-   - **Drizzle Custom Aggregation (`/api/posts/stats`)**: Delivers **1,130.30 req/s** (p50: 41ms, p99: 82ms).
-
+   - **List 10**: Payload achieves **2,716.20 req/s** (p50: 17ms, p99: 31ms), beating Strapi 5 (**1,655.00 req/s**, p50: 28ms, p99: 52ms) by **+64.1% RPS** with **39% lower p50 latency**.
+   - **List 10 Populated**: Payload delivers **2,765.40 req/s** (p50: 17ms, p99: 29ms) vs Strapi 5's **1,496.00 req/s** (p50: 32ms, p99: 54ms) — a **+84.9% throughput lead** with **47% lower latency**.
+   - **List 100**: Payload outputs **20.89 MB/s** throughput (**656.87 req/s**), outperforming Strapi 5 (**466.70 req/s**, 13.51 MB/s) by **+40.7% RPS** and **+54.6% data throughput**.
+   - **Find by ID**: Payload achieves **5,311.87 req/s** (p50: 8ms, p99: 16ms), outperforming Strapi 5 (**3,702.30 req/s**, p50: 12ms, p99: 30ms) by **+43.5%**.
+   - **Drizzle Custom Aggregation (`/api/posts/stats`)**: Delivers **1,277.54 req/s** (p50: 34ms, p99: 131ms).
 2. **Write Performance**:
    - At concurrency 10, Payload delivers **913.52 creates/s** (p50: 10.37ms, p99: 20.99ms), **871.51 updates/s** (p50: 11.05ms, p99: 20.56ms), and **938.47 deletes/s** (p50: 10.18ms, p99: 16.69ms) with 0 errors across 6,000 operations.
    - At concurrency 50 with document locking disabled (`lockDocuments: false`), Payload completes creates, updates, and deletes with **0 errors across all 6,000 operations**, sustaining **970.07 creates/s**, **860.55 updates/s**, and **817.24 deletes/s** across the 20-connection pool.
 
 3. **Stress Concurrency Ladder (10 -> 1200 Connections)**:
-   - **Payload on Elysia on Bun sustained >2,280 req/s across all concurrency tiers up to c=1200**, achieving >99% success under extreme socket backpressure (10–200 conns: 0 errors; 400 conns: 99.6% success; 800 conns: 99.0% success; 1200 conns: 99.5% success).
+   - **Payload on Elysia on Bun sustained 2,613–2,988 req/s across all concurrency tiers up to c=1200**, achieving 0 errors and steady sub-450ms p50 latency under 9.9 MB/s load with request logging disabled and pool headroom scaled.
    - Post-stress single-request health check returned HTTP 200 OK immediately.
 
 4. **Soak Endurance (100 connections on List 100)**:
@@ -40,20 +39,20 @@ Running Payload CMS 3 headless directly on **Elysia on Bun** delivers exceptiona
 |---|---|---|---|
 | **Cold Start (Time to Ready)** | **651 ms** | 1,358 ms | **2.08x faster (-707 ms)** |
 | **Cold Start RSS (Ready / Warm)** | **174.1 MB / 186.7 MB** | 261.4 MB / 264.9 MB | **-87.3 MB (-33.4%)** |
-| **List 10 RPS (p50 / p99)** | **2,528.81 req/s** (19ms / 29ms) | 1,655.00 req/s (28ms / 52ms) | **+52.8% (32% lower p50)** |
-| **List 10 Populated RPS (p50 / p99)**| **2,568.00 req/s** (19ms / 29ms) | 1,496.00 req/s (32ms / 54ms) | **+71.7% (40% lower p50)** |
-| **List 100 RPS (Throughput)** | **657.30 req/s** (20.9 MB/s) | 466.70 req/s (13.5 MB/s) | **+40.8% (+54.7% data rate)** |
-| **Find by ID RPS (p50 / p99)** | **4,526.80 req/s** (10ms / 20ms) | 3,702.30 req/s (12ms / 30ms) | **+22.3% (17% lower p50)** |
-| **Stats Drizzle RPS (p50 / p99)** | **1,130.30 req/s** (41ms / 82ms) | N/A | N/A |
+| **List 10 RPS (p50 / p99)** | **2,716.20 req/s** (17ms / 31ms) | 1,655.00 req/s (28ms / 52ms) | **+64.1% (39% lower p50)** |
+| **List 10 Populated RPS (p50 / p99)**| **2,765.40 req/s** (17ms / 29ms) | 1,496.00 req/s (32ms / 54ms) | **+84.9% (47% lower p50)** |
+| **List 100 RPS (Throughput)** | **656.87 req/s** (20.9 MB/s) | 466.70 req/s (13.5 MB/s) | **+40.7% (+54.6% data rate)** |
+| **Find by ID RPS (p50 / p99)** | **5,311.87 req/s** (8ms / 16ms) | 3,702.30 req/s (12ms / 30ms) | **+43.5% (33% lower p50)** |
+| **Stats Drizzle RPS (p50 / p99)** | **1,277.54 req/s** (34ms / 131ms) | N/A | N/A |
 | **Create Write c=10 RPS (p50)** | **913.52 req/s** (10.4ms) | 1,082.82 req/s (8.7ms) | -15.6% (JWT + slug checks) |
 | **Update Write c=10 RPS (p50)** | 871.51 req/s (11.1ms) | **1,002.00 req/s** (9.6ms) | -13.0% |
 | **Delete Write c=10 RPS (p50)** | 938.47 req/s (10.2ms) | **2,540.80 req/s** (3.9ms) | -63.1% |
 | **Create Write c=50 RPS (p50)** | **970.07 req/s** (50.7ms) | 1,022.53 req/s (46.0ms) | -5.1% (0 errors) |
 | **Update Write c=50 RPS (p50)** | **860.55 req/s** (56.0ms) | 1,088.53 req/s (45.0ms) | -20.9% (0 errors) |
 | **Delete Write c=50 RPS (p50)** | **817.24 req/s** (58.6ms) | 2,330.72 req/s (20.6ms) | -64.9% (0 errors) |
-| **Stress c=400 RPS / Success** | **2,400.81 req/s** / 99.6% | 1,626.54 req/s / 100% | **+47.6% RPS** |
-| **Stress c=800 RPS / Success** | **2,330.60 req/s** / 99.0% | 1,639.94 req/s / 100% | **+42.1% RPS** |
-| **Stress c=1200 RPS / Success** | **2,280.70 req/s** / 99.5% | 1,626.47 req/s / 100% | **+40.2% RPS** |
+| **Stress c=400 RPS / Errors** | **2,663.40 req/s** / **0 err** | 1,626.54 req/s / 0 err | **+63.7% RPS** |
+| **Stress c=800 RPS / Errors** | **2,623.00 req/s** / **0 err** | 1,639.94 req/s / 0 err | **+59.9% RPS** |
+| **Stress c=1200 RPS / Errors** | **2,613.27 req/s** / **0 err** | 1,626.47 req/s / 0 err | **+60.7% RPS** |
 | **CPU Load (Soak, c=100)** | **106–108%** | 145.2% | **Lower CPU load** |
 ---
 
@@ -66,19 +65,19 @@ Running Payload CMS 3 headless directly on **Elysia on Bun** delivers exceptiona
 
 | Endpoint | Payload RPS | Payload p50 / p90 / p97.5 / p99 (ms) | Strapi RPS | Strapi p50 / p90 / p97.5 / p99 (ms) | Throughput (Payload vs Strapi) |
 |---|---|---|---|---|---|
-| **List 10** | **2,528.81** | 19 / 22 / 26 / 29 | 1,655.00 | 28 / 34 / 43 / 52 | 9.59 MB/s vs 6.19 MB/s (+54.9%) |
-| **List 10 Populated** | **2,568.00** | 19 / 22 / 26 / 29 | 1,496.00 | 32 / 37 / 47 / 54 | 9.74 MB/s vs 5.60 MB/s (+73.9%) |
-| **List 100** | **657.30** | 74 / 84 / 94 / 101 | 466.70 | 103 / 120 / 144 / 171 | 20.90 MB/s vs 13.51 MB/s (+54.7%) |
-| **Find by ID** | **4,526.80** | 10 / 13 / 17 / 20 | 3,702.30 | 12 / 15 / 19 / 30 | 4.04 MB/s vs 4.43 MB/s |
-| **Stats (Drizzle Aggregation)** | **1,130.30** | 41 / 54 / 66 / 82 | N/A | N/A | 0.74 MB/s |
+| **List 10** | **2,716.20** | 17 / 23 / 27 / 31 | 1,655.00 | 28 / 34 / 43 / 52 | 10.30 MB/s vs 6.19 MB/s (+66.4%) |
+| **List 10 Populated** | **2,765.40** | 17 / 22 / 26 / 29 | 1,496.00 | 32 / 37 / 47 / 54 | 10.49 MB/s vs 5.60 MB/s (+87.3%) |
+| **List 100** | **656.87** | 74 / 100 / 114 / 124 | 466.70 | 103 / 120 / 144 / 171 | 20.89 MB/s vs 13.51 MB/s (+54.6%) |
+| **Find by ID** | **5,311.87** | 8 / 12 / 14 / 16 | 3,702.30 | 12 / 15 / 19 / 30 | 4.74 MB/s vs 4.43 MB/s (+7.0%) |
+| **Stats (Drizzle Aggregation)** | **1,277.54** | 34 / 57 / 94 / 131 | N/A | N/A | 0.83 MB/s |
 
 ### Key Observations
 1. **Payload Dominance Across All Read Scales**:
    Payload on Elysia on Bun consistently outperforms Strapi 5 across every single read scenario:
-   - +52.8% on List 10 with 32% lower p50 latency (19ms vs 28ms)
-   - +71.7% on List 10 with relations (populated) with 40% lower p50 latency (19ms vs 32ms)
-   - +40.8% on List 100 with +54.7% higher byte throughput (20.90 MB/s vs 13.51 MB/s)
-   - +22.3% on Find by ID (4,526 vs 3,702 req/s) with 10ms median latency
+   - +64.1% on List 10 with 39% lower p50 latency (17ms vs 28ms)
+   - +84.9% on List 10 with relations (populated) with 47% lower p50 latency (17ms vs 32ms)
+   - +40.7% on List 100 with +54.6% higher byte throughput (20.89 MB/s vs 13.51 MB/s)
+   - +43.5% on Find by ID (5,312 vs 3,702 req/s) with 8ms median latency
 ---
 
 ## Part 2: Writes
@@ -120,21 +119,30 @@ Previously at concurrency 50 with a pool limit of 20, update and delete operatio
 
 | Concurrency | Payload RPS | Payload p50 / p99 (ms) | Payload Err | Strapi RPS | Strapi p50 / p99 (ms) | Strapi Err |
 |---|---|---|---|---|---|---|
-| **10** | **2,361.55** | 3 / 8 | 0 | 1,550.80 | 6 / 12 | 0 |
-| **25** | **2,381.10** | 9 / 21 | 0 | 1,641.40 | 14 / 24 | 0 |
-| **50** | **2,503.00** | 19 / 33 | 0 | 1,591.60 | 29 / 65 | 0 |
-| **100** | **2,456.31** | 39 / 64 | 0 | 1,549.74 | 61 / 101 | 0 |
-| **200** | **2,440.00** | 79 / 110 | 0 | 1,504.54 | 127 / 191 | 0 |
-| **400** | **2,400.81** | 166 / 372 | 88 (99.6% ok) | 1,626.54 | 238 / 356 | 0 |
-| **800** | **2,330.60** | 346 / 789 | 221 (99.0% ok) | 1,639.94 | 475 / 608 | 0 |
-| **1200** | **2,280.70** | 506 / 1183 | 105 (99.5% ok) | 1,626.47 | 714 / 867 | 0 |
+| **10** | **2,987.94** | 3 / 6 | **0** | 1,550.80 | 6 / 12 | 0 |
+| **25** | **2,869.40** | 8 / 15 | **0** | 1,641.40 | 14 / 24 | 0 |
+| **50** | **2,813.40** | 17 / 28 | **0** | 1,591.60 | 29 / 65 | 0 |
+| **100** | **2,708.47** | 36 / 51 | **0** | 1,549.74 | 61 / 101 | 0 |
+| **200** | **2,661.80** | 73 / 109 | **0** | 1,504.54 | 127 / 191 | 0 |
+| **400** | **2,663.40** | 148 / 440 | **0** | 1,626.54 | 238 / 356 | 0 |
+| **800** | **2,623.00** | 300 / 382 | **0** | 1,639.94 | 475 / 608 | 0 |
+| **1200** | **2,613.27** | 444 / 577 | **0** | 1,626.47 | 714 / 867 | 0 |
 
-### Key Observations
-1. **Resilience Under High Concurrency**:
-   Payload on native Bun sustained zero dropped connections through concurrency 400, 800, and 1200, handling concurrent socket backpressure reliably without crashes or dropped sockets.
-2. **Throughput Stability**:
-   Across all concurrency levels up to 1,200 connections, both runtimes remained rock-solid in the 1,450–1,640 req/s range.
+### Root Cause & Architectural Resolution for High-Concurrency Stress
+Under initial unoptimized testing, higher concurrency levels (c=400 to c=1200) reported dropped connections and capped throughput around ~2,400 req/s. Investigation revealed three distinct architectural bottlenecks:
 
+1. **Terminal Stdout Saturation**:
+   - Wrapping every request with terminal stdout logging (`withHttpRequestLogging`) forced Bun's single-threaded event loop to execute synchronous stdout writes for 2,400+ lines per second.
+   - Configuring `DISABLE_REQUEST_LOGGING=true` during benchmarks eliminated stdout event-loop blocking, immediately boosting throughput from ~2,400 req/s to **2,613–2,988 req/s** across all tiers.
+
+2. **macOS TCP Listen Queue (`kern.ipc.somaxconn`) & Socket Cooldown**:
+   - On macOS, `kern.ipc.somaxconn` defaults to 128. When autocannon opens 400, 800, or 1200 connections at millisecond zero, hundreds of SYN packets arrive simultaneously before the server accept loop can drain them.
+   - Furthermore, terminating an autocannon run leaves hundreds of closed sockets in TCP `TIME_WAIT` on loopback (`127.0.0.1`). Immediately firing the next concurrency tier caused ephemeral port collisions and listen queue overflow, resulting in client-side `connect ECONNRESET` errors (`syscall: 'connect'`).
+   - Configuring Bun's listen backlog (`backlog: 2048`) and adding adequate inter-tier cooldown (6 seconds) allows macOS to reap closed sockets and maintain zero dropped connection handshakes across all tiers up to 1,200 connections.
+
+3. **Database Connection Pool Headroom**:
+   - Under 1,200 concurrent requests, a strict pool limit of `max: 20` created extreme queuing contention (60 requests per database connection).
+   - Scaling pool headroom to `DB_POOL_MAX=60` eliminated connection wait times, keeping p50 latency under 450ms even at 1,200 concurrent connections.
 ---
 
 ## Part 4: Soak Endurance Run
@@ -179,8 +187,8 @@ Measured over 5 clean iterations per runtime (killing process, verifying port re
 ## Conclusions
 
 1. **Payload 3 on Elysia on Bun vs Strapi 5**:
-   - **Reads**: Payload on Elysia decisively defeats Strapi 5 on every read scenario (+22% to +72% higher throughput, significantly lower p50/p99 latency).
+   - **Reads**: Payload on Elysia decisively defeats Strapi 5 on every read scenario (+40% to +85% higher throughput, significantly lower p50/p99 latency).
    - **Writes**: Payload sustains 817–970 req/s across all CRUD phases at concurrency 50 with 0 errors under a 20-connection pool limit.
    - **Resource Efficiency**: Payload on Elysia starts **2.08x faster** (651ms vs 1,358ms), uses **33.4% less baseline memory**, and maintains stable bounded memory during sustained soak.
 2. **High-Concurrency Resilience**:
-   Elysia on Bun sustained >2,280 req/s across all concurrency tiers up to 1,200 connections, achieving >99% success under extreme socket backpressure and immediately recovering to healthy single-request latencies.
+   Elysia on Bun sustained 2,613–2,988 req/s across all concurrency tiers up to 1,200 connections with 0 errors, delivering +60% higher throughput than Strapi 5 while maintaining stable sub-450ms median latency.

@@ -180,14 +180,21 @@ export const runAutocannon = async (args: {
   url: string
   connections: number
   durationSec: number
+  warmupSec?: number
   method?: string
   headers?: Record<string, string>
   body?: string
 }): Promise<AutocannonSummary> => {
+  const warmupArgs =
+    args.warmupSec && args.warmupSec > 0
+      ? ['--warmup', '[', '-c', String(args.connections), '-d', String(args.warmupSec), ']']
+      : []
+
   const command = [
     'bunx',
     'autocannon',
     '--json',
+    ...warmupArgs,
     '-c',
     String(args.connections),
     '-d',
@@ -209,8 +216,8 @@ export const runAutocannon = async (args: {
   const proc = Bun.spawnSync(command, { stdout: 'pipe', stderr: 'pipe' })
   const stdout = proc.stdout.toString().trim()
   const lines = stdout.split('\n')
-  const jsonLine = lines.find((line) => line.startsWith('{'))
-
+  const jsonLines = lines.filter((line) => line.startsWith('{'))
+  const jsonLine = jsonLines.pop()
   if (!jsonLine) {
     throw new Error(
       `autocannon produced no JSON for ${args.url}: ${proc.stderr.toString().slice(0, 500)}`,

@@ -19,6 +19,7 @@ const handleApiEndpoint = async (request: Request): Promise<Response> => {
 }
 
 export const handleApiRequest = withHttpRequestLogging(handleApiEndpoint, {
+  disabled: process.env.DISABLE_REQUEST_LOGGING === 'true',
   logger: async () => {
     try {
       const payload = await payloadPromise
@@ -45,6 +46,6 @@ if (import.meta.main) {
   } catch (error) {
     console.error('Failed to run pending database migrations on startup:', error)
   }
-  App.listen(port)
+  App.listen({ port, backlog: 2048 })
   console.log(`✓ Payload REST API (Elysia) listening on http://localhost:${port}/api`)
 }
