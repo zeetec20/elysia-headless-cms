@@ -1,15 +1,28 @@
-import type { Payload, PayloadRequest } from 'payload'
+import type { Payload, PayloadLogger, PayloadRequest } from 'payload'
 
-type LogTarget = PayloadRequest | Payload | null | undefined
+export type PayloadLogTarget = PayloadRequest | Payload | PayloadLogger | null | undefined
 
-const extractPayloadLogger = (target?: LogTarget) => {
-  if (!target) return undefined
-  if ('logger' in target && target.logger) return target.logger
-  if ('payload' in target && target.payload?.logger) return target.payload.logger
-  return undefined
+let defaultPayloadLogger: PayloadLogger | undefined
+
+export const setDefaultPayloadLogger = (logger?: PayloadLogger): void => {
+  defaultPayloadLogger = logger
 }
 
-export const logEndpointInfo = (target: LogTarget, message: string, extra?: unknown): void => {
+export const getDefaultPayloadLogger = (): PayloadLogger | undefined => defaultPayloadLogger
+
+export const extractPayloadLogger = (target?: PayloadLogTarget): PayloadLogger | undefined => {
+  if (!target) return defaultPayloadLogger
+  if ('info' in target && typeof target.info === 'function') return target as PayloadLogger
+  if ('logger' in target && target.logger) return target.logger
+  if ('payload' in target && target.payload?.logger) return target.payload.logger
+  return defaultPayloadLogger
+}
+
+export const logPayloadInfo = (
+  target: PayloadLogTarget,
+  message: string,
+  extra?: unknown,
+): void => {
   const logger = extractPayloadLogger(target)
   if (!logger?.info) return
 
@@ -21,7 +34,11 @@ export const logEndpointInfo = (target: LogTarget, message: string, extra?: unkn
   logger.info(message)
 }
 
-export const logEndpointWarn = (target: LogTarget, message: string, extra?: unknown): void => {
+export const logPayloadWarn = (
+  target: PayloadLogTarget,
+  message: string,
+  extra?: unknown,
+): void => {
   const logger = extractPayloadLogger(target)
   if (!logger?.warn) return
 
@@ -33,14 +50,30 @@ export const logEndpointWarn = (target: LogTarget, message: string, extra?: unkn
   logger.warn(message)
 }
 
-export const logEndpointError = (target: LogTarget, message: string, error?: unknown): void => {
+export const logPayloadError = (
+  target: PayloadLogTarget,
+  message: string,
+  error?: unknown,
+): void => {
   const logger = extractPayloadLogger(target)
-  if (!logger?.error) return
+  if (logger?.error) {
+    if (error !== undefined) {
+      logger.error({ err: error }, message)
+      return
+    }
 
-  if (error !== undefined) {
-    logger.error({ err: error }, message)
+    logger.error(message)
     return
   }
 
-  logger.error(message)
+  if (error !== undefined) {
+    console.error(message, error)
+    return
+  }
+
+  console.error(message)
 }
+
+export const logEndpointInfo = logPayloadInfo
+export const logEndpointWarn = logPayloadWarn
+export const logEndpointError = logPayloadError

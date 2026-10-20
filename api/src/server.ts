@@ -4,6 +4,11 @@ import { getPayload, handleEndpoints, type PayloadLogger } from 'payload'
 import { executePendingDatabaseMigrations } from './migrations/runPendingMigrations'
 import configPromise from './payload.config'
 import { withHttpRequestLogging } from './utils/httpRequestLoggerUtils'
+import {
+  logPayloadError,
+  logPayloadInfo,
+  setDefaultPayloadLogger,
+} from './utils/payloadLoggerUtils'
 
 export type {
   PayloadListResponse,
@@ -18,6 +23,7 @@ let cachedPayloadLogger: PayloadLogger | undefined
 payloadPromise
   .then((payload) => {
     cachedPayloadLogger = payload.logger
+    setDefaultPayloadLogger(payload.logger)
   })
   .catch(() => {})
 
@@ -45,11 +51,16 @@ if (import.meta.main) {
   try {
     const payload = await payloadPromise
     cachedPayloadLogger = payload.logger
+    setDefaultPayloadLogger(payload.logger)
     await executePendingDatabaseMigrations(payload)
-  } catch (error) {
-    console.error('Failed to run pending database migrations on startup:', error)
-  }
 
-  App.listen({ port, backlog: 2048 })
-  console.log(`✓ Payload REST API (Elysia) listening on http://localhost:${port}/api`)
+    App.listen({ port, backlog: 2048 })
+    logPayloadInfo(payload, `✓ Payload REST API (Elysia) listening on http://localhost:${port}/api`)
+  } catch (error) {
+    logPayloadError(
+      cachedPayloadLogger,
+      'Failed to run pending database migrations on startup:',
+      error,
+    )
+  }
 }
