@@ -1,40 +1,49 @@
 import type { MigrateDownArgs, MigrateUpArgs } from '@payloadcms/db-postgres'
+import { resolveInitialAdminCredentials } from '../utils/payloadSecurityUtils'
 
 export const up = async ({ payload, req }: MigrateUpArgs): Promise<void> => {
-  const existingUsers = await payload.find({
-    collection: 'users',
-    where: {
-      email: {
-        equals: 'admin@example.com',
-      },
-    },
-    limit: 1,
-    req,
-  })
+  const initialAdmin = resolveInitialAdminCredentials()
 
-  if (existingUsers.totalDocs === 0) {
-    await payload.create({
+  if (initialAdmin) {
+    const existingUsers = await payload.find({
       collection: 'users',
-      data: {
-        email: 'admin@example.com',
-        password: 'password123',
-        role: 'superadmin',
+      where: {
+        email: {
+          equals: initialAdmin.email,
+        },
       },
-      context: { system: true },
+      limit: 1,
       req,
     })
-    payload.logger.info('✓ Seeded initial admin user: admin@example.com / password123')
+
+    if (existingUsers.totalDocs === 0) {
+      await payload.create({
+        collection: 'users',
+        data: {
+          email: initialAdmin.email,
+          password: initialAdmin.password,
+          role: 'superadmin',
+        },
+        context: { system: true },
+        req,
+      })
+      payload.logger.info(`✓ Seeded initial admin user: ${initialAdmin.email}`)
+    } else {
+      await payload.update({
+        collection: 'users',
+        id: existingUsers.docs[0].id,
+        data: {
+          role: 'superadmin',
+        },
+        context: { system: true },
+        req,
+      })
+      payload.logger.info('✓ Updated initial admin user to superadmin role')
+    }
   } else {
-    await payload.update({
-      collection: 'users',
-      id: existingUsers.docs[0].id,
-      data: {
-        role: 'superadmin',
-      },
-      context: { system: true },
-      req,
-    })
-    payload.logger.info('✓ Updated initial admin user to superadmin role')
+    payload.logger.warn(
+      'Skipping initial admin seed: set INITIAL_ADMIN_EMAIL and INITIAL_ADMIN_PASSWORD outside local development',
+    )
   }
 
   const existingPosts = await payload.find({
@@ -89,6 +98,8 @@ export const up = async ({ payload, req }: MigrateUpArgs): Promise<void> => {
 }
 
 export const down = async ({ payload, req }: MigrateDownArgs): Promise<void> => {
+  const initialAdmin = resolveInitialAdminCredentials()
+
   await payload.delete({
     collection: 'posts',
     where: {
@@ -99,13 +110,15 @@ export const down = async ({ payload, req }: MigrateDownArgs): Promise<void> => 
     req,
   })
 
-  await payload.delete({
-    collection: 'users',
-    where: {
-      email: {
-        equals: 'admin@example.com',
+  if (initialAdmin) {
+    await payload.delete({
+      collection: 'users',
+      where: {
+        email: {
+          equals: initialAdmin.email,
+        },
       },
-    },
-    req,
-  })
+      req,
+    })
+  }
 }

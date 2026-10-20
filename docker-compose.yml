@@ -20,11 +20,13 @@ services:
       # user field over the connection-string user.
       DATABASE_URI: postgres://postgres:postgres@db:5432/payload_elysia
       PGUSER: postgres
-      PAYLOAD_SECRET: change-me-32-chars-minimum
-      APP_ENV: development
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:?set PAYLOAD_SECRET}
+      APP_ENV: ${APP_ENV:?set APP_ENV to development, uat, or production}
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:-}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-}
       PORT: "3000"
-      # NOTE: Set this to the deployed dashboard origin so cookie auth (csrf allowlist) accepts it.
-      DASHBOARD_URL: http://localhost:5173
+      # NOTE: Set this to the deployed dashboard origin so browser CORS requests are accepted.
+      DASHBOARD_URL: ${DASHBOARD_URL:-http://localhost:5173}
     ports:
       - "3000:3000"
     depends_on:

@@ -41,7 +41,7 @@ describe('Endpoint Doc Utils', () => {
     expect(doc.summary).toBe('Secure Endpoint')
     expect(doc.security).toEqual([{ ApiKey: [] }])
     expect(doc.responses?.[401]).toBeDefined()
-    expect(doc.responses?.[401]?.description).toBe('Unauthorized - Valid API key required')
+    expect(doc.responses?.[401]?.description).toBe('Unauthorized - Valid Bearer token required')
     expect(doc.responses?.[200]).toBeDefined()
   })
 })

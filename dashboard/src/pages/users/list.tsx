@@ -46,13 +46,6 @@ const UsersList = () => {
           render={(value: string) => <Tag color={roleColors[value] ?? 'default'}>{value}</Tag>}
         />
         <Table.Column<PayloadUser>
-          dataIndex="enableAPIKey"
-          title="API key"
-          render={(value: boolean | undefined) =>
-            value ? <Tag color="green">enabled</Tag> : <Tag>disabled</Tag>
-          }
-        />
-        <Table.Column<PayloadUser>
           dataIndex="createdAt"
           title="Created"
           sorter

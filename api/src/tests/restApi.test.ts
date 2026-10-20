@@ -5,16 +5,12 @@ import configPromise from '@/payload.config'
 
 const API_ORIGIN = 'http://localhost:3000'
 const DASHBOARD_ORIGIN = 'http://localhost:5173'
-// NOTE: Cookie-based auth is CSRF-guarded inside extractJWT: synthetic browser-like
-// requests must present an allowlisted Origin (POST/PATCH/DELETE) or Sec-Fetch-Site
-// same-origin (GET) for the payload-token cookie to be accepted.
 const runRestRequest = async (path: string, init: RequestInit = {}): Promise<Response> => {
   const request = new Request(`${API_ORIGIN}${path}`, {
     ...init,
     headers: {
       ...(init.body ? { 'Content-Type': 'application/json' } : {}),
       Origin: DASHBOARD_ORIGIN,
-      'Sec-Fetch-Site': 'same-origin',
       ...(init.headers ?? {}),
     },
   })
@@ -40,36 +36,45 @@ const loginAs = async (email: string, password: string): Promise<string> => {
     body: JSON.stringify({ email, password }),
   })
   expect(response.status).toBe(200)
-  return extractTokenCookie(response)
+
+  const body = await readJsonBody(response)
+  const token = body.token
+  if (typeof token !== 'string') {
+    throw new Error('Login response did not return a JWT token')
+  }
+  return token
 }
 
 const runAuthenticatedRestRequest = (
-  cookie: string,
+  token: string,
   path: string,
   init: RequestInit = {},
 ): Promise<Response> =>
-  runRestRequest(path, { ...init, headers: { Cookie: cookie, ...(init.headers ?? {}) } })
+  runRestRequest(path, {
+    ...init,
+    headers: { Authorization: `Bearer ${token}`, ...(init.headers ?? {}) },
+  })
 
 describe('Payload REST API mounted through handleEndpoints', () => {
-  let superadminCookie = ''
-  let guestCookie = ''
+  let superadminToken = ''
+  let guestToken = ''
   const createdPostIds: string[] = []
   const createdUserIds: string[] = []
   const runSuffix = Date.now().toString(36)
 
   beforeAll(async () => {
-    superadminCookie = await loginAs('admin@example.com', 'password123')
+    superadminToken = await loginAs('admin@example.com', 'password123')
   })
 
   afterAll(async () => {
     await Promise.all([
       ...createdPostIds.map((postId) =>
-        runAuthenticatedRestRequest(superadminCookie, `/api/posts/${postId}`, {
+        runAuthenticatedRestRequest(superadminToken, `/api/posts/${postId}`, {
           method: 'DELETE',
         }),
       ),
       ...createdUserIds.map((userId) =>
-        runAuthenticatedRestRequest(superadminCookie, `/api/users/${userId}`, {
+        runAuthenticatedRestRequest(superadminToken, `/api/users/${userId}`, {
           method: 'DELETE',
         }),
       ),
@@ -100,15 +105,18 @@ describe('Payload REST API mounted through handleEndpoints', () => {
       expect(response.status).toBe(401)
     })
 
-    it('sets the payload-token cookie on successful login and resolves /me', async () => {
+    it('returns a JWT on successful login and resolves /me', async () => {
       const response = await runRestRequest('/api/users/login', {
         method: 'POST',
         body: JSON.stringify({ email: 'admin@example.com', password: 'password123' }),
       })
       expect(response.status).toBe(200)
 
-      const cookie = extractTokenCookie(response)
-      const meResponse = await runAuthenticatedRestRequest(cookie, '/api/users/me')
+      const loginBody = await readJsonBody(response)
+      const token = loginBody.token
+      expect(typeof token).toBe('string')
+
+      const meResponse = await runAuthenticatedRestRequest(token as string, '/api/users/me')
       expect(meResponse.status).toBe(200)
 
       const body = await readJsonBody(meResponse)
@@ -125,31 +133,30 @@ describe('Payload REST API mounted through handleEndpoints', () => {
       expect(body.user).toBeNull()
     })
 
-    it('drops cookie auth for non-allowlisted origins even with Sec-Fetch-Site same-origin', async () => {
-      // NOTE: A drifted dashboard port (e.g. Vite serving on 5174) no longer matches the CSRF
-      // allowlist: extractJWT drops the payload-token cookie whenever an Origin header is
-      // present and not allowlisted, so even a valid session request fails as unauthenticated.
-      const driftedOrigin = 'http://localhost:5174'
-      const postPayload = { title: 'Drifted Port Post', slug: `drifted-${runSuffix}` }
-
-      const driftedResponse = await runRestRequest('/api/posts?depth=0', {
+    it('ignores the login cookie and requires a Bearer token', async () => {
+      const response = await runRestRequest('/api/users/login', {
         method: 'POST',
-        body: JSON.stringify(postPayload),
-        headers: { Cookie: superadminCookie, Origin: driftedOrigin },
+        body: JSON.stringify({ email: 'admin@example.com', password: 'password123' }),
       })
-      expect(driftedResponse.status).toBe(403)
+      expect(response.status).toBe(200)
 
-      const allowlistedResponse = await runAuthenticatedRestRequest(
-        superadminCookie,
-        '/api/posts?depth=0',
-        {
-          method: 'POST',
-          body: JSON.stringify(postPayload),
-        },
-      )
-      expect(allowlistedResponse.status).toBe(201)
-      const allowlistedBody = await readJsonBody(allowlistedResponse)
-      createdPostIds.push((allowlistedBody.doc as Record<string, unknown>).id as string)
+      const cookie = extractTokenCookie(response)
+      const cookieOnlyResponse = await runRestRequest('/api/posts/stats', {
+        headers: { Cookie: cookie },
+      })
+      expect(cookieOnlyResponse.status).toBe(401)
+    })
+
+    it('revokes the JWT session on logout', async () => {
+      const token = await loginAs('admin@example.com', 'password123')
+
+      const logoutResponse = await runAuthenticatedRestRequest(token, '/api/users/logout', {
+        method: 'POST',
+      })
+      expect(logoutResponse.status).toBe(200)
+
+      const replayResponse = await runAuthenticatedRestRequest(token, '/api/posts/stats')
+      expect(replayResponse.status).toBe(401)
     })
   })
 
@@ -163,7 +170,7 @@ describe('Payload REST API mounted through handleEndpoints', () => {
     })
 
     it('rejects invalid slugs with a field-level validation error', async () => {
-      const response = await runAuthenticatedRestRequest(superadminCookie, '/api/posts?depth=0', {
+      const response = await runAuthenticatedRestRequest(superadminToken, '/api/posts?depth=0', {
         method: 'POST',
         body: JSON.stringify({ title: 'Bad Slug Post', slug: 'Invalid Slug!' }),
       })
@@ -177,7 +184,7 @@ describe('Payload REST API mounted through handleEndpoints', () => {
 
     it('rejects duplicate slugs with a uniqueness error', async () => {
       const createResponse = await runAuthenticatedRestRequest(
-        superadminCookie,
+        superadminToken,
         '/api/posts?depth=0',
         {
           method: 'POST',
@@ -189,7 +196,7 @@ describe('Payload REST API mounted through handleEndpoints', () => {
       createdPostIds.push((createdBody.doc as Record<string, unknown>).id as string)
 
       const duplicateResponse = await runAuthenticatedRestRequest(
-        superadminCookie,
+        superadminToken,
         '/api/posts?depth=0',
         {
           method: 'POST',
@@ -206,7 +213,7 @@ describe('Payload REST API mounted through handleEndpoints', () => {
 
     it('creates, updates and deletes posts as superadmin', async () => {
       const createResponse = await runAuthenticatedRestRequest(
-        superadminCookie,
+        superadminToken,
         '/api/posts?depth=0',
         {
           method: 'POST',
@@ -223,7 +230,7 @@ describe('Payload REST API mounted through handleEndpoints', () => {
       createdPostIds.push(postId)
 
       const updateResponse = await runAuthenticatedRestRequest(
-        superadminCookie,
+        superadminToken,
         `/api/posts/${postId}?depth=0`,
         {
           method: 'PATCH',
@@ -235,7 +242,7 @@ describe('Payload REST API mounted through handleEndpoints', () => {
       expect((updatedBody.doc as Record<string, unknown>).status).toBe('published')
 
       const deleteResponse = await runAuthenticatedRestRequest(
-        superadminCookie,
+        superadminToken,
         `/api/posts/${postId}`,
         {
           method: 'DELETE',
@@ -267,7 +274,7 @@ describe('Payload REST API mounted through handleEndpoints', () => {
       }
 
       const createResponse = await runAuthenticatedRestRequest(
-        superadminCookie,
+        superadminToken,
         '/api/posts?depth=0',
         {
           method: 'POST',
@@ -284,7 +291,7 @@ describe('Payload REST API mounted through handleEndpoints', () => {
       createdPostIds.push(postId)
 
       const readResponse = await runAuthenticatedRestRequest(
-        superadminCookie,
+        superadminToken,
         `/api/posts/${postId}?depth=0`,
       )
       expect(readResponse.status).toBe(200)
@@ -323,11 +330,11 @@ describe('Payload REST API mounted through handleEndpoints', () => {
 
       // Role uplift attempts are forced back to guest on public self-registration.
       expect((body.doc as Record<string, unknown>).role).toBe('guest')
-      guestCookie = await loginAs(`guest-${runSuffix}@example.com`, 'guestpass123')
+      guestToken = await loginAs(`guest-${runSuffix}@example.com`, 'guestpass123')
     })
 
     it('denies guest post creation with 403', async () => {
-      const response = await runAuthenticatedRestRequest(guestCookie, '/api/posts?depth=0', {
+      const response = await runAuthenticatedRestRequest(guestToken, '/api/posts?depth=0', {
         method: 'POST',
         body: JSON.stringify({ title: 'Guest Post', slug: `guest-${runSuffix}` }),
       })
@@ -338,7 +345,7 @@ describe('Payload REST API mounted through handleEndpoints', () => {
       const unauthenticated = await runRestRequest('/api/posts/stats')
       expect(unauthenticated.status).toBe(401)
 
-      const authenticated = await runAuthenticatedRestRequest(superadminCookie, '/api/posts/stats')
+      const authenticated = await runAuthenticatedRestRequest(superadminToken, '/api/posts/stats')
       expect(authenticated.status).toBe(200)
 
       const body = await readJsonBody(authenticated)
@@ -346,7 +353,7 @@ describe('Payload REST API mounted through handleEndpoints', () => {
     })
 
     it('scopes guest user listing to the own account', async () => {
-      const response = await runAuthenticatedRestRequest(guestCookie, '/api/users?limit=10')
+      const response = await runAuthenticatedRestRequest(guestToken, '/api/users?limit=10')
       expect(response.status).toBe(200)
 
       const body = await readJsonBody(response)
@@ -356,12 +363,12 @@ describe('Payload REST API mounted through handleEndpoints', () => {
     })
 
     it('blocks guest role uplift attempts on self-update', async () => {
-      const meResponse = await runAuthenticatedRestRequest(guestCookie, '/api/users/me')
+      const meResponse = await runAuthenticatedRestRequest(guestToken, '/api/users/me')
       const meBody = await readJsonBody(meResponse)
       const guestId = (meBody.user as Record<string, unknown>).id as string
 
       const upliftResponse = await runAuthenticatedRestRequest(
-        guestCookie,
+        guestToken,
         `/api/users/${guestId}?depth=0`,
         {
           method: 'PATCH',
@@ -375,11 +382,11 @@ describe('Payload REST API mounted through handleEndpoints', () => {
     })
 
     it('hides other users from guests behind the self-scope constraint', async () => {
-      const meResponse = await runAuthenticatedRestRequest(superadminCookie, '/api/users/me')
+      const meResponse = await runAuthenticatedRestRequest(superadminToken, '/api/users/me')
       const meBody = await readJsonBody(meResponse)
       const superadminId = (meBody.user as Record<string, unknown>).id as string
 
-      const response = await runAuthenticatedRestRequest(guestCookie, `/api/users/${superadminId}`)
+      const response = await runAuthenticatedRestRequest(guestToken, `/api/users/${superadminId}`)
       expect(response.status).toBe(404)
     })
   })

@@ -1,10 +1,8 @@
 import { Edit, useForm } from '@refinedev/antd'
 import { useGetIdentity } from '@refinedev/core'
-import { Checkbox, Col, Form, Input, Row, Select, Typography } from 'antd'
+import { Col, Form, Input, Row, Select } from 'antd'
 
 import type { PayloadUser } from '@/types'
-
-const { Text } = Typography
 
 const roleFormOptions = [
   { label: 'Super Admin', value: 'superadmin' },
@@ -62,20 +60,6 @@ const UsersEdit = () => {
         >
           <Select options={roleFormOptions} disabled={!isSuperAdmin} />
         </Form.Item>
-        <Form.Item
-          label="Enable API key"
-          name="enableAPIKey"
-          valuePropName="checked"
-          extra="Enabling generates an API key usable as 'users API-Key <key>' in the Authorization header."
-        >
-          <Checkbox>Enable API key</Checkbox>
-        </Form.Item>
-        {user?.apiKey ? (
-          <Form.Item label="API key">
-            <Input readOnly value={user.apiKey} />
-            <Text type="secondary">Use as "Authorization: users API-Key &lt;key&gt;"</Text>
-          </Form.Item>
-        ) : null}
       </Form>
     </Edit>
   )

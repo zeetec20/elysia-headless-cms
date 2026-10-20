@@ -8,10 +8,12 @@ import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { secureOpenApiDocsPlugin, systemHealthPayloadEndpoint } from './handlers/system'
 import { endpointAuthMiddlewarePlugin } from './utils/endpointAuthUtils'
+import { resolvePayloadAuthSecret } from './utils/payloadSecurityUtils'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+const payloadSecret = resolvePayloadAuthSecret()
 const rawDatabaseUri = process.env.DATABASE_URI
 const databaseUri =
   rawDatabaseUri &&
@@ -32,9 +34,9 @@ export default buildConfig({
   serverURL: serverUrl,
   // NOTE: Dev-mode direct access origin for the Refine dashboard when not reverse-proxied.
   cors: [process.env.DASHBOARD_URL || 'http://localhost:5173'],
-  // NOTE: Cookie-based auth is CSRF-checked (extractJWT): the dashboard origin must be
-  // allowlisted or browser cookie requests are rejected.
-  csrf: [process.env.DASHBOARD_URL || 'http://localhost:5173'],
+  auth: {
+    jwtOrder: ['Bearer'],
+  },
   graphQL: {
     disable: true,
   },
@@ -51,11 +53,10 @@ export default buildConfig({
           spec.components.securitySchemes = {
             ...spec.components.securitySchemes,
             ApiKey: {
-              type: 'apiKey',
-              name: 'Authorization',
-              in: 'header',
-              description:
-                'API key authorization (e.g. "users API-Key <api-key>" or "Bearer <token>")',
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT',
+              description: 'JWT access token from POST /api/users/login',
             },
           }
         }
@@ -71,9 +72,7 @@ export default buildConfig({
   endpoints: [systemHealthPayloadEndpoint],
   collections: [Users, Posts],
   editor: lexicalEditor(),
-  secret:
-    process.env.PAYLOAD_SECRET ||
-    '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+  secret: payloadSecret,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

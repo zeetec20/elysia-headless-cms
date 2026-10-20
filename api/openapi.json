@@ -64,10 +64,6 @@
                 "-updatedAt",
                 "createdAt",
                 "-createdAt",
-                "apiKey",
-                "-apiKey",
-                "apiKeyIndex",
-                "-apiKeyIndex",
                 "email",
                 "-email",
                 "resetPasswordToken",
@@ -1441,7 +1437,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized - Valid API key required",
+            "description": "Unauthorized - Valid Bearer token required",
             "content": {
               "application/json": {
                 "schema": {
@@ -1589,10 +1585,10 @@
   "components": {
     "securitySchemes": {
       "ApiKey": {
-        "type": "apiKey",
-        "name": "Authorization",
-        "in": "header",
-        "description": "API key authorization (e.g. \"users API-Key <api-key>\" or \"Bearer <token>\")"
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT access token from POST /api/users/login"
       }
     },
     "schemas": {
@@ -1620,18 +1616,6 @@
           },
           "createdAt": {
             "type": "string"
-          },
-          "enableAPIKey": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "apiKey": {
-            "type": "string",
-            "nullable": true
-          },
-          "hasAPIKey": {
-            "type": "boolean",
-            "nullable": true
           },
           "email": {
             "type": "string"
@@ -2036,86 +2020,6 @@
               "less_than_equal": {
                 "type": "string",
                 "format": "date-time"
-              }
-            }
-          },
-          "enableAPIKey": {
-            "type": "object",
-            "properties": {
-              "equals": {
-                "type": "boolean"
-              },
-              "not_equals": {
-                "type": "boolean"
-              },
-              "in": {
-                "type": "string"
-              },
-              "not_in": {
-                "type": "string"
-              }
-            }
-          },
-          "apiKey": {
-            "type": "object",
-            "properties": {
-              "equals": {
-                "type": "string"
-              },
-              "not_equals": {
-                "type": "string"
-              },
-              "in": {
-                "type": "string"
-              },
-              "not_in": {
-                "type": "string"
-              },
-              "like": {
-                "type": "string"
-              },
-              "contains": {
-                "type": "string"
-              }
-            }
-          },
-          "apiKeyIndex": {
-            "type": "object",
-            "properties": {
-              "equals": {
-                "type": "string"
-              },
-              "not_equals": {
-                "type": "string"
-              },
-              "in": {
-                "type": "string"
-              },
-              "not_in": {
-                "type": "string"
-              },
-              "like": {
-                "type": "string"
-              },
-              "contains": {
-                "type": "string"
-              }
-            }
-          },
-          "hasAPIKey": {
-            "type": "object",
-            "properties": {
-              "equals": {
-                "type": "boolean"
-              },
-              "not_equals": {
-                "type": "boolean"
-              },
-              "in": {
-                "type": "string"
-              },
-              "not_in": {
-                "type": "string"
               }
             }
           },
@@ -3169,18 +3073,6 @@
                     "guest"
                   ]
                 },
-                "enableAPIKey": {
-                  "type": "boolean",
-                  "nullable": true
-                },
-                "apiKey": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "hasAPIKey": {
-                  "type": "boolean",
-                  "nullable": true
-                },
                 "email": {
                   "type": "string"
                 },
@@ -3243,18 +3135,6 @@
                     "superadmin",
                     "guest"
                   ]
-                },
-                "enableAPIKey": {
-                  "type": "boolean",
-                  "nullable": true
-                },
-                "apiKey": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "hasAPIKey": {
-                  "type": "boolean",
-                  "nullable": true
                 },
                 "email": {
                   "type": "string"

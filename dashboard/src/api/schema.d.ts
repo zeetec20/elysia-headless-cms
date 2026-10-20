@@ -450,9 +450,6 @@ export interface components {
             role: "superadmin" | "guest";
             updatedAt: string;
             createdAt: string;
-            enableAPIKey?: boolean | null;
-            apiKey?: string | null;
-            hasAPIKey?: boolean | null;
             email: string;
             sessions?: {
                 id: string;
@@ -558,34 +555,6 @@ export interface components {
                 less_than?: string;
                 /** Format: date-time */
                 less_than_equal?: string;
-            };
-            enableAPIKey?: {
-                equals?: boolean;
-                not_equals?: boolean;
-                in?: string;
-                not_in?: string;
-            };
-            apiKey?: {
-                equals?: string;
-                not_equals?: string;
-                in?: string;
-                not_in?: string;
-                like?: string;
-                contains?: string;
-            };
-            apiKeyIndex?: {
-                equals?: string;
-                not_equals?: string;
-                in?: string;
-                not_in?: string;
-                like?: string;
-                contains?: string;
-            };
-            hasAPIKey?: {
-                equals?: boolean;
-                not_equals?: boolean;
-                in?: string;
-                not_in?: string;
             };
             email?: {
                 /** Format: email */
@@ -1278,9 +1247,6 @@ export interface components {
                 "application/json": {
                     /** @enum {string} */
                     role: "superadmin" | "guest";
-                    enableAPIKey?: boolean | null;
-                    apiKey?: string | null;
-                    hasAPIKey?: boolean | null;
                     email: string;
                     sessions?: {
                         id: string;
@@ -1299,9 +1265,6 @@ export interface components {
                 "application/json": {
                     /** @enum {string} */
                     role?: "superadmin" | "guest";
-                    enableAPIKey?: boolean | null;
-                    apiKey?: string | null;
-                    hasAPIKey?: boolean | null;
                     email?: string;
                     sessions?: {
                         id: string;
@@ -1479,7 +1442,7 @@ export interface operations {
                 depth?: number;
                 locale?: string;
                 "fallback-locale"?: string;
-                sort?: "updatedAt" | "-updatedAt" | "createdAt" | "-createdAt" | "apiKey" | "-apiKey" | "apiKeyIndex" | "-apiKeyIndex" | "email" | "-email" | "resetPasswordToken" | "-resetPasswordToken" | "resetPasswordExpiration" | "-resetPasswordExpiration" | "salt" | "-salt" | "hash" | "-hash" | "resetPasswordRequestedAt" | "-resetPasswordRequestedAt" | "loginAttempts" | "-loginAttempts" | "lockUntil" | "-lockUntil";
+                sort?: "updatedAt" | "-updatedAt" | "createdAt" | "-createdAt" | "email" | "-email" | "resetPasswordToken" | "-resetPasswordToken" | "resetPasswordExpiration" | "-resetPasswordExpiration" | "salt" | "-salt" | "hash" | "-hash" | "resetPasswordRequestedAt" | "-resetPasswordRequestedAt" | "loginAttempts" | "-loginAttempts" | "lockUntil" | "-lockUntil";
                 where?: Record<string, never> & (components["schemas"]["UserQueryOperations"] | components["schemas"]["UserQueryOperationsAnd"] | components["schemas"]["UserQueryOperationsOr"]);
             };
             header?: never;
@@ -2111,7 +2074,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Unauthorized - Valid API key required */
+            /** @description Unauthorized - Valid Bearer token required */
             401: {
                 headers: {
                     [name: string]: unknown;

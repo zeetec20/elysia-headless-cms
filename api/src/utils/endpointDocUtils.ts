@@ -58,7 +58,7 @@ export const createStandardEndpointDocumentation = (
 
   if (authenticated) {
     responses[401] = {
-      description: 'Unauthorized - Valid API key required',
+      description: 'Unauthorized - Valid Bearer token required',
       content: {
         'application/json': {
           schema: errorResponseSchema,

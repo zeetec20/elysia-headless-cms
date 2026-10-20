@@ -2,8 +2,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 
 import { App } from '@/server'
 
-// NOTE: Cookie-based auth is CSRF-guarded inside extractJWT: synthetic browser-like requests
-// must present an allowlisted Origin for POST/PATCH/DELETE so the payload-token cookie applies.
 const DASHBOARD_ORIGIN = 'http://localhost:5173'
 
 const runApiRequest = async (path: string, init: RequestInit = {}): Promise<Response> => {
@@ -12,7 +10,6 @@ const runApiRequest = async (path: string, init: RequestInit = {}): Promise<Resp
     headers: {
       ...(init.body ? { 'Content-Type': 'application/json' } : {}),
       Origin: DASHBOARD_ORIGIN,
-      'Sec-Fetch-Site': 'same-origin',
       ...(init.headers ?? {}),
     },
   })
@@ -38,19 +35,25 @@ const loginThroughApiRoute = async (email: string, password: string): Promise<st
     body: JSON.stringify({ email, password }),
   })
   expect(response.status).toBe(200)
-  return extractTokenCookie(response)
+
+  const body = await readJsonBody(response)
+  const token = body.token
+  if (typeof token !== 'string') {
+    throw new Error('Login response did not return a JWT token')
+  }
+  return token
 }
 
 describe('Direct REST API engine on Elysia HTTP server', () => {
-  let superadminCookie = ''
-  let guestCookie = ''
+  let superadminToken = ''
+  let guestToken = ''
   const createdPostIds: string[] = []
   const createdUserIds: string[] = []
   const runSuffix = Date.now().toString(36)
   const guestEmail = `guest-rest-${runSuffix}@example.com`
 
   beforeAll(async () => {
-    superadminCookie = await loginThroughApiRoute('admin@example.com', 'password123')
+    superadminToken = await loginThroughApiRoute('admin@example.com', 'password123')
   })
 
   afterAll(async () => {
@@ -58,13 +61,13 @@ describe('Direct REST API engine on Elysia HTTP server', () => {
       ...createdPostIds.map((postId) =>
         runApiRequest(`/api/posts/${postId}`, {
           method: 'DELETE',
-          headers: { Cookie: superadminCookie },
+          headers: { Authorization: `Bearer ${superadminToken}` },
         }),
       ),
       ...createdUserIds.map((userId) =>
         runApiRequest(`/api/users/${userId}`, {
           method: 'DELETE',
-          headers: { Cookie: superadminCookie },
+          headers: { Authorization: `Bearer ${superadminToken}` },
         }),
       ),
     ])
@@ -78,17 +81,17 @@ describe('Direct REST API engine on Elysia HTTP server', () => {
     expect([400, 401]).toContain(response.status)
   })
 
-  it('login route returns the Payload session and cookie', async () => {
+  it('login route returns a JWT and user', async () => {
     const response = await runApiRequest('/api/users/login', {
       method: 'POST',
       body: JSON.stringify({ email: 'admin@example.com', password: 'password123' }),
     })
     expect(response.status).toBe(200)
-    expect(response.headers.get('set-cookie')).toContain('payload-token=')
 
     const body = await readJsonBody(response)
     const user = body.user as Record<string, unknown>
     expect(user.email).toBe('admin@example.com')
+    expect(typeof body.token).toBe('string')
   })
 
   it('me route returns the anonymous null-user contract', async () => {
@@ -99,9 +102,9 @@ describe('Direct REST API engine on Elysia HTTP server', () => {
     expect(body.user).toBeNull()
   })
 
-  it('me route returns authenticated user when cookie is present', async () => {
+  it('me route returns authenticated user when Bearer token is present', async () => {
     const response = await runApiRequest('/api/users/me', {
-      headers: { Cookie: superadminCookie },
+      headers: { Authorization: `Bearer ${superadminToken}` },
     })
     expect(response.status).toBe(200)
 
@@ -109,6 +112,20 @@ describe('Direct REST API engine on Elysia HTTP server', () => {
     const user = body.user as Record<string, unknown>
     expect(user).toBeDefined()
     expect(user.email).toBe('admin@example.com')
+  })
+
+  it('ignores the login cookie and requires a Bearer token', async () => {
+    const loginResponse = await runApiRequest('/api/users/login', {
+      method: 'POST',
+      body: JSON.stringify({ email: 'admin@example.com', password: 'password123' }),
+    })
+    expect(loginResponse.status).toBe(200)
+
+    const cookie = extractTokenCookie(loginResponse)
+    const cookieOnlyResponse = await runApiRequest('/api/posts/stats', {
+      headers: { Cookie: cookie },
+    })
+    expect(cookieOnlyResponse.status).toBe(401)
   })
 
   it('list route returns the Payload collection response shape', async () => {
@@ -125,7 +142,7 @@ describe('Direct REST API engine on Elysia HTTP server', () => {
     expect(anonymous.status).toBe(401)
 
     const authenticated = await runApiRequest('/api/posts/stats', {
-      headers: { Cookie: superadminCookie },
+      headers: { Authorization: `Bearer ${superadminToken}` },
     })
     expect(authenticated.status).toBe(200)
 
@@ -141,7 +158,7 @@ describe('Direct REST API engine on Elysia HTTP server', () => {
         slug: `rest-facade-post-${Date.now().toString(36)}`,
         status: 'draft',
       }),
-      headers: { Cookie: superadminCookie },
+      headers: { Authorization: `Bearer ${superadminToken}` },
     })
     expect(created.status).toBe(201)
     const createdBody = await readJsonBody(created)
@@ -163,18 +180,18 @@ describe('Direct REST API engine on Elysia HTTP server', () => {
     createdUserIds.push((guestRegisterBody.doc as Record<string, unknown>).id as string)
     expect((guestRegisterBody.doc as Record<string, unknown>).role).toBe('guest')
 
-    guestCookie = await loginThroughApiRoute(guestEmail, 'guestpass123')
+    guestToken = await loginThroughApiRoute(guestEmail, 'guestpass123')
     const guestPatch = await runApiRequest(`/api/posts/${postId}`, {
       method: 'PATCH',
       body: JSON.stringify({ title: 'Guest takeover attempt' }),
-      headers: { Cookie: guestCookie },
+      headers: { Authorization: `Bearer ${guestToken}` },
     })
     expect(guestPatch.status).toBe(403)
 
     const adminPatch = await runApiRequest(`/api/posts/${postId}`, {
       method: 'PATCH',
       body: JSON.stringify({ title: 'Admin rename via REST' }),
-      headers: { Cookie: superadminCookie },
+      headers: { Authorization: `Bearer ${superadminToken}` },
     })
     expect(adminPatch.status).toBe(200)
     const patchedBody = await readJsonBody(adminPatch)

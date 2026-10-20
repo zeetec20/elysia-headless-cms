@@ -36,9 +36,14 @@ export const protectUserRoleBeforeChange: CollectionBeforeChangeHook = ({
 export const Users: CustomCollectionConfig = {
   slug: 'users',
   lockDocuments: false,
-  // NOTE: Marks Users as canonical auth/identity collection (sessions, API keys, /login, /me). Content collections like Posts must never define auth.
+  // NOTE: Marks Users as the canonical JWT Bearer-only identity collection (sessions, /login, /me).
+  // Cookies and API keys are disabled; content collections like Posts must never define auth.
   auth: {
-    useAPIKey: true,
+    useAPIKey: false,
+    useSessions: true,
+    tokenExpiration: 60 * 60,
+    maxLoginAttempts: 5,
+    lockTime: 10 * 60 * 1000,
   },
   // NOTE: Gates /admin and delete to superadmin; public registration allowed; profile read/update scoped to self for guests.
   access: {

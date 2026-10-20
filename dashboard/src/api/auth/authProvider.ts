@@ -39,6 +39,12 @@ const createSessionError = (statusCode: number, error: unknown): Error => {
   return sessionError
 }
 
+// NOTE: Must run before clearAuthState so the request still carries the Bearer token and
+// Payload can revoke the server-side session.
+const revokeStoredAuthSession = async (): Promise<void> => {
+  await apiClient.POST('/api/users/logout', {}).catch(() => undefined)
+}
+
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
     try {
@@ -48,9 +54,10 @@ export const authProvider: AuthProvider = {
       if (!data?.user || !data?.token) {
         throw createSessionError(response.status, error)
       }
+      setStoredAuthToken(data.token)
       if (data.user.role !== 'superadmin') {
+        await revokeStoredAuthSession()
         clearAuthState()
-        await apiClient.POST('/api/users/logout', {}).catch(() => undefined)
         return {
           success: false,
           error: {
@@ -59,7 +66,6 @@ export const authProvider: AuthProvider = {
           },
         }
       }
-      setStoredAuthToken(data.token)
       setCachedCurrentUser(data.user as PayloadUser)
       return { success: true, redirectTo: '/' }
     } catch (error) {
@@ -86,8 +92,8 @@ export const authProvider: AuthProvider = {
   },
 
   logout: async () => {
+    await revokeStoredAuthSession()
     clearAuthState()
-    await apiClient.POST('/api/users/logout', {}).catch(() => undefined)
     return { success: true, redirectTo: '/login' }
   },
 
