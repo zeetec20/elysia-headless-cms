@@ -15,7 +15,7 @@ export interface HttpRequestLogEntry {
 export type HttpRequestLogSink = (entry: HttpRequestLogEntry) => void
 
 export interface HttpRequestLoggingOptions {
-  logger?: PayloadLogger | (() => PayloadLogger | Promise<PayloadLogger>)
+  logger?: PayloadLogger | (() => PayloadLogger | undefined | Promise<PayloadLogger | undefined>)
   sink?: HttpRequestLogSink
   disabled?: boolean
 }
@@ -99,9 +99,8 @@ export const withHttpRequestLogging = (
       ...(errorMessage ? { errorMessage } : {}),
     }
 
-    const resolvedLogger =
-      typeof options.logger === 'function' ? await options.logger() : options.logger
-
+    const maybeLogger = typeof options.logger === 'function' ? options.logger() : options.logger
+    const resolvedLogger = maybeLogger instanceof Promise ? await maybeLogger : maybeLogger
     writeHttpRequestLog(entry, options.sink, resolvedLogger)
 
     return response

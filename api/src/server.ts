@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia'
-import { getPayload, handleEndpoints } from 'payload'
+import { getPayload, handleEndpoints, type PayloadLogger } from 'payload'
 
 import { executePendingDatabaseMigrations } from './migrations/runPendingMigrations'
 import configPromise from './payload.config'
@@ -7,6 +7,12 @@ import { withHttpRequestLogging } from './utils/httpRequestLoggerUtils'
 
 const payloadPromise = getPayload({ config: configPromise })
 payloadPromise.catch(() => {})
+let cachedPayloadLogger: PayloadLogger | undefined
+payloadPromise
+  .then((payload) => {
+    cachedPayloadLogger = payload.logger
+  })
+  .catch(() => {})
 
 const port = Number(process.env.PORT) || 3000
 
@@ -15,24 +21,19 @@ const handleApiEndpoint = async (request: Request): Promise<Response> => {
   if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
     return handleEndpoints({ config: configPromise, request })
   }
+
   return new Response('Not Found', { status: 404 })
 }
 
 export const handleApiRequest = withHttpRequestLogging(handleApiEndpoint, {
   disabled: process.env.DISABLE_REQUEST_LOGGING === 'true',
-  logger: async () => {
-    try {
-      const payload = await payloadPromise
-      return payload.logger
-    } catch {
-      return undefined
-    }
-  },
+  logger: () => cachedPayloadLogger,
 })
 
 export const App = new Elysia({ name: 'payload-elysia-api' })
   .all('/api/*', ({ request }) => handleApiRequest(request))
   .all('/api', ({ request }) => handleApiRequest(request))
+
 export type {
   PayloadListResponse,
   PayloadLoginResponse,
@@ -42,6 +43,7 @@ export type {
 if (import.meta.main) {
   try {
     const payload = await payloadPromise
+    cachedPayloadLogger = payload.logger
     await executePendingDatabaseMigrations(payload)
   } catch (error) {
     console.error('Failed to run pending database migrations on startup:', error)
