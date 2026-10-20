@@ -18,8 +18,6 @@ import type { PayloadListResponse } from '@/types'
 import { getStoredAuthToken } from './auth/authToken'
 import { resolvedApiBaseUrl } from './restClient'
 
-const API_URL = '/api'
-
 const getBaseUrl = (): string => resolvedApiBaseUrl.replace(/\/$/, '')
 
 export interface PayloadErrorBody {
@@ -204,7 +202,7 @@ const buildQueryString = (query: CollectionQuery): string => {
 }
 
 export const createPayloadDataProvider = (): DataProvider => ({
-  getApiUrl: () => API_URL,
+  getApiUrl: () => `${getBaseUrl()}/api`,
 
   getList: async <TData extends BaseRecord = BaseRecord>({
     resource,

@@ -14,13 +14,10 @@ payload-elysia-refine/
 ```mermaid
 graph LR
   UI["Refine Dashboard<br/>React 19 + Antd 5<br/>(:5173)"]
-  Vite["Vite Reverse Proxy<br/>(/api)"]
   API["Bun + Elysia REST Engine<br/>Payload 3 Headless (:3000)"]
   DB[("PostgreSQL 17<br/>UUIDv7")]
 
-  UI -- "dev: /api" --> Vite
-  Vite -- "target: VITE_API_URL" --> API
-  UI -- "prod: Authorization: Bearer <token>" --> API
+  UI -- "REST: VITE_API_URL<br/>Authorization: Bearer <token>" --> API
   API --> DB
 ```
 
@@ -78,9 +75,9 @@ All API runtime behavior is env-driven (`api/.env` in development, container/CLI
 | `SERVER_URL` | API | Canonical API origin exposed to clients (default `http://localhost:3000`). |
 | `DASHBOARD_URL` | API | Dashboard's real origin: feeds both the CORS allowlist **and** the cookie-CSRF allowlist. |
 | `APP_ENV` | API | `development` / `uat` / `production`; gates the basic-auth-protected `/docs`. |
-| `VITE_API_URL` | dashboard | Base REST API URL consumed by the dashboard client and Vite proxy (default `http://localhost:3000`). |
+| `VITE_API_URL` | dashboard | Direct base REST API URL consumed by the dashboard client (default `http://localhost:3000`). |
 
-**Cookie-auth rule in production:** Payload's `extractJWT` drops the `payload-token` cookie unless the request `Origin` header is allowlisted in `config.csrf`. `DASHBOARD_URL` must therefore be set to the exact deployed dashboard origin (e.g. the Vercel URL, scheme included), or every dashboard write silently becomes an anonymous request and fails with 403 — the same failure mode a drifted dev Vite port produces locally.
+**Cross-origin rule in production:** the dashboard calls the API directly with a Bearer token, so `DASHBOARD_URL` must match the exact deployed dashboard origin (scheme included). It feeds the CORS allowlist; a mismatch blocks browser calls to the API.
 
 ## Deployment
 
@@ -100,8 +97,8 @@ First startup executes pending database migrations automatically (including init
 ### Dashboard on Vercel
 
 1. Import the repo into Vercel; set **Root Directory = `dashboard`** (framework: Vite, build `bun run build`, output `dist`).
-2. Fill in the one placeholder in `dashboard/vercel.json`: replace `https://<your-api-host>` with the deployed API URL. The `/api/*` rewrite keeps dashboard↔API traffic **same-origin** in production, so the httpOnly cookie session and CSRF allowlist keep working with zero code changes.
-3. On the API side, set `DASHBOARD_URL` to the deployed Vercel URL (see the cookie-auth rule above) and `SERVER_URL` to the API's public URL.
+2. Set the `VITE_API_URL` environment variable to the deployed API origin (for example `https://api.example.com`). The dashboard calls that REST API directly.
+3. On the API side, set `DASHBOARD_URL` to the deployed Vercel URL, `SERVER_URL` to the API's public URL, and make sure `DASHBOARD_URL` is in the CORS allowlist.
 
 ## Notes
 

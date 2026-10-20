@@ -8,6 +8,7 @@ import {
 import { Authenticated, CanAccess, Refine } from '@refinedev/core'
 import routerProvider, { NavigateToResource, UnsavedChangesNotifier } from '@refinedev/react-router'
 import { App as AntdApp, ConfigProvider } from 'antd'
+import type { ReactNode } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router'
 
 import { authProvider, createPayloadAccessControlProvider } from '@/api/auth'
@@ -20,6 +21,9 @@ import PostsList from '@/pages/posts/list'
 import UsersCreate from '@/pages/users/create'
 import UsersEdit from '@/pages/users/edit'
 import UsersList from '@/pages/users/list'
+
+// Refine hides these links with `false`, but its prop type only accepts ReactNode.
+const hiddenAuthPageLink = false as unknown as ReactNode
 
 export const App = () => (
   <BrowserRouter>
@@ -55,7 +59,16 @@ export const App = () => (
                 </Authenticated>
               }
             >
-              <Route path="/login" element={<AuthPage type="login" />} />
+              <Route
+                path="/login"
+                element={
+                  <AuthPage
+                    type="login"
+                    forgotPasswordLink={hiddenAuthPageLink}
+                    registerLink={hiddenAuthPageLink}
+                  />
+                }
+              />
               <Route path="*" element={<ErrorComponent />} />
             </Route>
             <Route
