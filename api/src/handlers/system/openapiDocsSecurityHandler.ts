@@ -1,5 +1,10 @@
 import type { Config, PayloadHandler, PayloadRequest, Plugin } from 'payload'
 
+import {
+  isOpenApiDocsDevelopmentEnvironment,
+  isOpenApiDocsUatEnvironment,
+} from '../../utils/openApiDocsUtils'
+
 const isOpenApiDocsSecuredPath = (path: string): boolean => {
   return (
     path === '/docs' ||
@@ -8,10 +13,6 @@ const isOpenApiDocsSecuredPath = (path: string): boolean => {
     path.startsWith('/docs/') ||
     path.startsWith('/openapi/')
   )
-}
-
-const isOpenApiUatEnvironment = (): boolean => {
-  return process.env.APP_ENV === 'uat'
 }
 
 const extractOpenApiRequestHeader = (req: PayloadRequest, headerName: string): string | null => {
@@ -37,7 +38,12 @@ const verifyOpenApiDocsAccess = (req: PayloadRequest): Response | null => {
     return null
   }
 
-  if (!isOpenApiUatEnvironment()) {
+  // NOTE: Local development serves the docs without credentials; UAT still requires basic auth.
+  if (isOpenApiDocsDevelopmentEnvironment()) {
+    return null
+  }
+
+  if (!isOpenApiDocsUatEnvironment()) {
     return Response.json(
       {
         error: 'Not Found',

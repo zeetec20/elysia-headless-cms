@@ -24,7 +24,7 @@ graph LR
 - ⚡ **API**: Headless Payload 3 REST engine on Bun + Elysia (no admin UI, no Next.js).
 - 🔒 **Auth**: Superadmin JWT Bearer token authentication (`Authorization: Bearer <token>`), 1-hour expiry, session revoked on logout. Cookies and API keys are disabled.
 - 📊 **Database**: PostgreSQL with UUID v7 ids and Drizzle custom aggregations (`/api/posts/stats`).
-- 🧭 **Docs**: Scalar OpenAPI interactive docs at `/docs` (basic-auth secured by `APP_ENV`).
+- 🧭 **Docs**: Scalar OpenAPI interactive docs at `/api/docs`; the URL is printed on boot in `development` and `uat` (UAT requires basic auth, production serves 404).
 
 ## Collections & auth semantics
 
@@ -77,7 +77,7 @@ All API runtime behavior is env-driven (`api/.env` in development, container/CLI
 | `DASHBOARD_URL` | API | Dashboard's real origin for the CORS allowlist. |
 | `INITIAL_ADMIN_EMAIL` | API | Initial superadmin email. The admin seed is skipped when unset. |
 | `INITIAL_ADMIN_PASSWORD` | API | Initial superadmin password, used together with `INITIAL_ADMIN_EMAIL`. |
-| `APP_ENV` | API | `development` / `uat` / `production`; gates the basic-auth-protected `/docs`. |
+| `APP_ENV` | API | `development` / `uat` / `production`; gates the basic-auth-protected `/api/docs`. |
 | `VITE_API_URL` | dashboard | Direct base REST API URL consumed by the dashboard client (default `http://localhost:3000`). |
 
 **Cross-origin rule in production:** the dashboard calls the API directly with a Bearer token, so `DASHBOARD_URL` must match the exact deployed dashboard origin (scheme included). It feeds the CORS allowlist; a mismatch blocks browser calls to the API.
