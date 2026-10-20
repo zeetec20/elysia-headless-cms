@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia'
 import { getPayload, handleEndpoints, type PayloadLogger } from 'payload'
 
+import { API_ROUTE_PREFIX } from './constants'
 import { executePendingDatabaseMigrations } from './migrations/runPendingMigrations'
 import configPromise from './payload.config'
 import { withHttpRequestLogging } from './utils/httpRequestLoggerUtils'
@@ -32,7 +33,7 @@ const port = Number(process.env.PORT) || 3000
 
 const handleApiEndpoint = async (request: Request): Promise<Response> => {
   const url = new URL(request.url)
-  if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
+  if (url.pathname === API_ROUTE_PREFIX || url.pathname.startsWith(`${API_ROUTE_PREFIX}/`)) {
     return handleEndpoints({ config: configPromise, request })
   }
 
@@ -45,8 +46,8 @@ export const handleApiRequest = withHttpRequestLogging(handleApiEndpoint, {
 })
 
 export const App = new Elysia({ name: 'payload-elysia-api' })
-  .all('/api/*', ({ request }) => handleApiRequest(request))
-  .all('/api', ({ request }) => handleApiRequest(request))
+  .all(`${API_ROUTE_PREFIX}/*`, ({ request }) => handleApiRequest(request))
+  .all(API_ROUTE_PREFIX, ({ request }) => handleApiRequest(request))
 
 if (import.meta.main) {
   try {
@@ -62,10 +63,7 @@ if (import.meta.main) {
       logInfo(payload, `✓ Scalar OpenAPI docs: ${resolveOpenApiDocsUrl(process.env, port)}`)
 
       if (isOpenApiDocsUatEnvironment()) {
-        logInfo(
-          payload,
-          '  OpenAPI docs require HTTP basic auth (OPENAPI_DOCS_USER / OPENAPI_DOCS_PASSWORD)',
-        )
+        logInfo(payload, '  OpenAPI docs require HTTP basic auth with a superadmin account (Users)')
       }
     }
   } catch (error) {

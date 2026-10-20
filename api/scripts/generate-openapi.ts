@@ -21,13 +21,14 @@ const generatePayloadOpenApiSpecification = async () => {
   const serverUrl = process.env.SERVER_URL || 'http://localhost:3000'
   const parsedUrl = new URL(serverUrl)
 
+  // NOTE: `internalDocsRequest` bypasses the docs gate in-process; HTTP callers cannot set it.
   const mockRequest = {
     payload,
     protocol: parsedUrl.protocol,
     headers: new Headers({
       host: parsedUrl.host,
-      'x-internal-docs': 'true',
     }),
+    internalDocsRequest: true,
   } as unknown as PayloadRequest
 
   const response = await endpoint.handler(mockRequest)

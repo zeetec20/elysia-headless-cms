@@ -5,6 +5,7 @@ import { secureOpenApiDocsPlugin } from '@/handlers/system'
 
 const createMockScalarPayloadRequest = (
   headersInit: Record<string, string> = {},
+  overrides: Record<string, unknown> = {},
 ): PayloadRequest => {
   const headers = new Headers({
     host: 'localhost:3000',
@@ -14,6 +15,7 @@ const createMockScalarPayloadRequest = (
   return {
     protocol: 'http:',
     headers,
+    ...overrides,
   } as unknown as PayloadRequest
 }
 
@@ -53,10 +55,8 @@ describe('Scalar Documentation Endpoint & Security', () => {
     expect(html).toContain('http://localhost:3000/api/openapi.json')
   })
 
-  it('enforces Basic Auth on Scalar endpoint when APP_ENV=uat', async () => {
+  it('enforces basic auth on the Scalar endpoint when APP_ENV=uat', async () => {
     process.env.APP_ENV = 'uat'
-    process.env.OPENAPI_DOCS_USER = 'uat-admin'
-    process.env.OPENAPI_DOCS_PASSWORD = 'uat-secret123'
 
     const scalarPlugin = scalar({ docsUrl: '/docs' })
     const baseConfig = await scalarPlugin({ endpoints: [] } as unknown as Config)
@@ -78,10 +78,8 @@ describe('Scalar Documentation Endpoint & Security', () => {
     expect(invalidResponse?.status).toBe(401)
   })
 
-  it('grants access to Scalar endpoint with valid credentials or x-internal-docs header', async () => {
+  it('grants Scalar access only to in-process requests in UAT', async () => {
     process.env.APP_ENV = 'uat'
-    process.env.OPENAPI_DOCS_USER = 'uat-admin'
-    process.env.OPENAPI_DOCS_PASSWORD = 'uat-secret123'
 
     const scalarPlugin = scalar({ docsUrl: '/docs' })
     const baseConfig = await scalarPlugin({ endpoints: [] } as unknown as Config)
@@ -90,21 +88,16 @@ describe('Scalar Documentation Endpoint & Security', () => {
     const docsEndpoint = securedConfig.endpoints?.find((endpoint) => endpoint.path === '/docs')
     expect(docsEndpoint).toBeDefined()
 
-    const validCredentials = Buffer.from('uat-admin:uat-secret123').toString('base64')
-    const validAuthReq = createMockScalarPayloadRequest({
-      authorization: `Basic ${validCredentials}`,
-    })
-    const validAuthResponse = await docsEndpoint?.handler(validAuthReq)
-    expect(validAuthResponse?.status).toBe(200)
-    const validAuthHtml = await validAuthResponse?.text()
-    expect(validAuthHtml).toContain('<div id="scalar-api"></div>')
+    const internalReq = createMockScalarPayloadRequest({}, { internalDocsRequest: true })
+    const internalResponse = await docsEndpoint?.handler(internalReq)
+    expect(internalResponse?.status).toBe(200)
+    const internalHtml = await internalResponse?.text()
+    expect(internalHtml).toContain('<div id="scalar-api"></div>')
 
-    const bypassReq = createMockScalarPayloadRequest({
+    const headerBypassReq = createMockScalarPayloadRequest({
       'x-internal-docs': 'true',
     })
-    const bypassResponse = await docsEndpoint?.handler(bypassReq)
-    expect(bypassResponse?.status).toBe(200)
-    const bypassHtml = await bypassResponse?.text()
-    expect(bypassHtml).toContain('<div id="scalar-api"></div>')
+    const headerBypassResponse = await docsEndpoint?.handler(headerBypassReq)
+    expect(headerBypassResponse?.status).toBe(401)
   })
 })
