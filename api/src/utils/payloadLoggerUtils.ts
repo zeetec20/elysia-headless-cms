@@ -18,11 +18,7 @@ export const extractPayloadLogger = (target?: PayloadLogTarget): PayloadLogger |
   return defaultPayloadLogger
 }
 
-export const logPayloadInfo = (
-  target: PayloadLogTarget,
-  message: string,
-  extra?: unknown,
-): void => {
+export const logInfo = (target: PayloadLogTarget, message: string, extra?: unknown): void => {
   const logger = extractPayloadLogger(target)
   if (!logger?.info) return
 
@@ -34,11 +30,7 @@ export const logPayloadInfo = (
   logger.info(message)
 }
 
-export const logPayloadWarn = (
-  target: PayloadLogTarget,
-  message: string,
-  extra?: unknown,
-): void => {
+export const logWarn = (target: PayloadLogTarget, message: string, extra?: unknown): void => {
   const logger = extractPayloadLogger(target)
   if (!logger?.warn) return
 
@@ -50,11 +42,7 @@ export const logPayloadWarn = (
   logger.warn(message)
 }
 
-export const logPayloadError = (
-  target: PayloadLogTarget,
-  message: string,
-  error?: unknown,
-): void => {
+export const logError = (target: PayloadLogTarget, message: string, error?: unknown): void => {
   const logger = extractPayloadLogger(target)
   if (logger?.error) {
     if (error !== undefined) {
@@ -74,6 +62,9 @@ export const logPayloadError = (
   console.error(message)
 }
 
-export const logEndpointInfo = logPayloadInfo
-export const logEndpointWarn = logPayloadWarn
-export const logEndpointError = logPayloadError
+export const logPayloadInfo = logInfo
+export const logPayloadWarn = logWarn
+export const logPayloadError = logError
+export const logEndpointInfo = logInfo
+export const logEndpointWarn = logWarn
+export const logEndpointError = logError

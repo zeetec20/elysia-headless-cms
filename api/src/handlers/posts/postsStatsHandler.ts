@@ -3,7 +3,7 @@ import type { CustomEndpointDocumentation } from 'payload-oapi'
 import { getPostsAggregatedStatsService } from '../../services/posts'
 import { createApiErrorResponse, createApiSuccessResponse } from '../../utils/apiResponseUtils'
 import { createStandardEndpointDocumentation } from '../../utils/endpointDocUtils'
-import { logEndpointError } from '../../utils/payloadLoggerUtils'
+import { logError } from '../../utils/payloadLoggerUtils'
 
 export const createPostsStatsOpenApiDocumentation = (
   authenticated = true,
@@ -55,7 +55,7 @@ export const handleGetPostsStatsEndpoint = async (req: PayloadRequest): Promise<
     const stats = await getPostsAggregatedStatsService(req.payload)
     return createApiSuccessResponse(stats)
   } catch (error) {
-    logEndpointError(req, 'Failed to compute post stats', error)
+    logError(req, 'Failed to compute post stats', error)
     return createApiErrorResponse('Failed to retrieve post statistics', 500)
   }
 }

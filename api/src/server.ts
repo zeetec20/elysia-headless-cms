@@ -4,11 +4,7 @@ import { getPayload, handleEndpoints, type PayloadLogger } from 'payload'
 import { executePendingDatabaseMigrations } from './migrations/runPendingMigrations'
 import configPromise from './payload.config'
 import { withHttpRequestLogging } from './utils/httpRequestLoggerUtils'
-import {
-  logPayloadError,
-  logPayloadInfo,
-  setDefaultPayloadLogger,
-} from './utils/payloadLoggerUtils'
+import { logError, logInfo, setDefaultPayloadLogger } from './utils/payloadLoggerUtils'
 
 export type {
   PayloadListResponse,
@@ -55,12 +51,8 @@ if (import.meta.main) {
     await executePendingDatabaseMigrations(payload)
 
     App.listen({ port, backlog: 2048 })
-    logPayloadInfo(payload, `✓ Payload REST API (Elysia) listening on http://localhost:${port}/api`)
+    logInfo(payload, `✓ Payload REST API (Elysia) listening on http://localhost:${port}/api`)
   } catch (error) {
-    logPayloadError(
-      cachedPayloadLogger,
-      'Failed to run pending database migrations on startup:',
-      error,
-    )
+    logError(cachedPayloadLogger, 'Failed to run pending database migrations on startup:', error)
   }
 }

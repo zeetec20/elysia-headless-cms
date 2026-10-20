@@ -6,9 +6,12 @@ import {
   logEndpointError,
   logEndpointInfo,
   logEndpointWarn,
+  logError,
+  logInfo,
   logPayloadError,
   logPayloadInfo,
   logPayloadWarn,
+  logWarn,
   setDefaultPayloadLogger,
 } from '@/utils/payloadLoggerUtils'
 
@@ -56,35 +59,35 @@ describe('Payload Logger Utils', () => {
     })
   })
 
-  describe('logPayloadInfo', () => {
+  describe('logInfo', () => {
     it('logs message directly without extra', () => {
-      logPayloadInfo(mockLogger, 'server started')
+      logInfo(mockLogger, 'server started')
       expect(mockLogger.info).toHaveBeenCalledTimes(1)
       expect(mockLogger.info).toHaveBeenCalledWith('server started')
     })
 
     it('logs message with extra metadata payload', () => {
-      logPayloadInfo(mockLogger, 'user logged in', { userId: 42 })
+      logInfo(mockLogger, 'user logged in', { userId: 42 })
       expect(mockLogger.info).toHaveBeenCalledTimes(1)
       expect(mockLogger.info).toHaveBeenCalledWith({ extra: { userId: 42 } }, 'user logged in')
     })
 
     it('uses defaultPayloadLogger when target is omitted', () => {
       setDefaultPayloadLogger(mockLogger)
-      logPayloadInfo(undefined, 'fallback info')
+      logInfo(undefined, 'fallback info')
       expect(mockLogger.info).toHaveBeenCalledWith('fallback info')
     })
   })
 
-  describe('logPayloadWarn', () => {
+  describe('logWarn', () => {
     it('logs warning without extra', () => {
-      logPayloadWarn(mockLogger, 'rate limit approaching')
+      logWarn(mockLogger, 'rate limit approaching')
       expect(mockLogger.warn).toHaveBeenCalledTimes(1)
       expect(mockLogger.warn).toHaveBeenCalledWith('rate limit approaching')
     })
 
     it('logs warning with extra payload', () => {
-      logPayloadWarn(mockLogger, 'rate limit approaching', { count: 95 })
+      logWarn(mockLogger, 'rate limit approaching', { count: 95 })
       expect(mockLogger.warn).toHaveBeenCalledTimes(1)
       expect(mockLogger.warn).toHaveBeenCalledWith(
         { extra: { count: 95 } },
@@ -93,32 +96,35 @@ describe('Payload Logger Utils', () => {
     })
   })
 
-  describe('logPayloadError', () => {
+  describe('logError', () => {
     it('logs error message with error object', () => {
       const err = new Error('db failure')
-      logPayloadError(mockLogger, 'migration failed', err)
+      logError(mockLogger, 'migration failed', err)
       expect(mockLogger.error).toHaveBeenCalledTimes(1)
       expect(mockLogger.error).toHaveBeenCalledWith({ err }, 'migration failed')
     })
 
     it('logs error message without error object', () => {
-      logPayloadError(mockLogger, 'unexpected condition')
+      logError(mockLogger, 'unexpected condition')
       expect(mockLogger.error).toHaveBeenCalledTimes(1)
       expect(mockLogger.error).toHaveBeenCalledWith('unexpected condition')
     })
   })
 
   describe('backwards compatibility aliases', () => {
-    it('aliases logEndpointInfo to logPayloadInfo', () => {
-      expect(logEndpointInfo).toBe(logPayloadInfo)
+    it('aliases logPayloadInfo and logEndpointInfo to logInfo', () => {
+      expect(logPayloadInfo).toBe(logInfo)
+      expect(logEndpointInfo).toBe(logInfo)
     })
 
-    it('aliases logEndpointWarn to logPayloadWarn', () => {
-      expect(logEndpointWarn).toBe(logPayloadWarn)
+    it('aliases logPayloadWarn and logEndpointWarn to logWarn', () => {
+      expect(logPayloadWarn).toBe(logWarn)
+      expect(logEndpointWarn).toBe(logWarn)
     })
 
-    it('aliases logEndpointError to logPayloadError', () => {
-      expect(logEndpointError).toBe(logPayloadError)
+    it('aliases logPayloadError and logEndpointError to logError', () => {
+      expect(logPayloadError).toBe(logError)
+      expect(logEndpointError).toBe(logError)
     })
   })
 })
