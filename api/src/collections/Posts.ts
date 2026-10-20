@@ -1,16 +1,17 @@
+import { POSTS_COLLECTION_SLUG, SUPERADMIN_USER_ROLE } from '../constants'
 import { postsStatsPayloadEndpoint } from '../handlers/posts'
 import type { CustomCollectionConfig } from '../utils/endpointAuthUtils'
 import { validatePostSlugField, validatePostTitleField } from '../validations/postsValidation'
 
 export const Posts: CustomCollectionConfig = {
-  slug: 'posts',
+  slug: POSTS_COLLECTION_SLUG,
   lockDocuments: false,
   access: {
-    admin: ({ req: { user } }) => user?.role === 'superadmin',
+    admin: ({ req: { user } }) => user?.role === SUPERADMIN_USER_ROLE,
     read: () => true,
-    create: ({ req: { user } }) => user?.role === 'superadmin',
-    update: ({ req: { user } }) => user?.role === 'superadmin',
-    delete: ({ req: { user } }) => user?.role === 'superadmin',
+    create: ({ req: { user } }) => user?.role === SUPERADMIN_USER_ROLE,
+    update: ({ req: { user } }) => user?.role === SUPERADMIN_USER_ROLE,
+    delete: ({ req: { user } }) => user?.role === SUPERADMIN_USER_ROLE,
   },
   admin: {
     useAsTitle: 'title',

@@ -6,6 +6,7 @@ import type {
   PayloadRequest,
   Plugin,
 } from 'payload'
+import { PAYLOAD_API_BEARER_REALM } from '../constants'
 import { createApiErrorResponse } from './apiResponseUtils'
 
 export type CustomEndpoint = Endpoint & {
@@ -20,7 +21,7 @@ export const withEndpointAuth = (handler: PayloadHandler): PayloadHandler => {
   return async (req: PayloadRequest): Promise<Response> => {
     if (!req.user) {
       return createApiErrorResponse('Unauthorized: Valid Bearer token required', 401, {
-        'WWW-Authenticate': 'Bearer realm="Payload API"',
+        'WWW-Authenticate': `Bearer realm="${PAYLOAD_API_BEARER_REALM}"`,
       })
     }
     return handler(req)

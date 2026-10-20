@@ -1,4 +1,5 @@
 import type { CollectionBeforeChangeHook } from 'payload'
+import { GUEST_USER_ROLE, SUPERADMIN_USER_ROLE, USERS_COLLECTION_SLUG } from '../constants'
 import type { CustomCollectionConfig } from '../utils/endpointAuthUtils'
 
 export const protectUserRoleBeforeChange: CollectionBeforeChangeHook = ({
@@ -9,7 +10,7 @@ export const protectUserRoleBeforeChange: CollectionBeforeChangeHook = ({
   originalDoc,
 }) => {
   const isPrivileged = Boolean(
-    req?.user?.role === 'superadmin' ||
+    req?.user?.role === SUPERADMIN_USER_ROLE ||
       context?.system ||
       context?.seed ||
       req?.context?.system ||
@@ -17,11 +18,11 @@ export const protectUserRoleBeforeChange: CollectionBeforeChangeHook = ({
   )
 
   const resolvedRole = (() => {
-    if (data.role === 'superadmin' && !isPrivileged) {
-      return operation === 'update' ? (originalDoc?.role ?? 'guest') : 'guest'
+    if (data.role === SUPERADMIN_USER_ROLE && !isPrivileged) {
+      return operation === 'update' ? (originalDoc?.role ?? GUEST_USER_ROLE) : GUEST_USER_ROLE
     }
     if (!data.role && operation === 'create') {
-      return 'guest'
+      return GUEST_USER_ROLE
     }
     return data.role
   })()
@@ -34,7 +35,7 @@ export const protectUserRoleBeforeChange: CollectionBeforeChangeHook = ({
 }
 
 export const Users: CustomCollectionConfig = {
-  slug: 'users',
+  slug: USERS_COLLECTION_SLUG,
   lockDocuments: false,
   // NOTE: Marks Users as the canonical JWT Bearer-only identity collection (sessions, /login, /me).
   // Cookies and API keys are disabled; content collections like Posts must never define auth.
@@ -47,13 +48,13 @@ export const Users: CustomCollectionConfig = {
   },
   // NOTE: Gates /admin and delete to superadmin; public registration allowed; profile read/update scoped to self for guests.
   access: {
-    admin: ({ req: { user } }) => user?.role === 'superadmin',
+    admin: ({ req: { user } }) => user?.role === SUPERADMIN_USER_ROLE,
     read: ({ req: { user } }) =>
-      user?.role === 'superadmin' ? true : user ? { id: { equals: user.id } } : false,
+      user?.role === SUPERADMIN_USER_ROLE ? true : user ? { id: { equals: user.id } } : false,
     create: () => true,
     update: ({ req: { user } }) =>
-      user?.role === 'superadmin' ? true : user ? { id: { equals: user.id } } : false,
-    delete: ({ req: { user } }) => user?.role === 'superadmin',
+      user?.role === SUPERADMIN_USER_ROLE ? true : user ? { id: { equals: user.id } } : false,
+    delete: ({ req: { user } }) => user?.role === SUPERADMIN_USER_ROLE,
   },
   // NOTE: Enforces role assignment integrity, forcing guest on self-registration and blocking elevation.
   hooks: {
@@ -68,20 +69,20 @@ export const Users: CustomCollectionConfig = {
       name: 'role',
       type: 'select',
       required: true,
-      defaultValue: 'guest',
+      defaultValue: GUEST_USER_ROLE,
       options: [
         {
           label: 'Super Admin',
-          value: 'superadmin',
+          value: SUPERADMIN_USER_ROLE,
         },
         {
           label: 'Guest',
-          value: 'guest',
+          value: GUEST_USER_ROLE,
         },
       ],
       access: {
-        create: ({ req: { user } }) => user?.role === 'superadmin',
-        update: ({ req: { user } }) => user?.role === 'superadmin',
+        create: ({ req: { user } }) => user?.role === SUPERADMIN_USER_ROLE,
+        update: ({ req: { user } }) => user?.role === SUPERADMIN_USER_ROLE,
       },
     },
   ],

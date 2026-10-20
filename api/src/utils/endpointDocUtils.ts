@@ -1,4 +1,5 @@
 import type { CustomEndpointDocumentation } from 'payload-oapi'
+import { OPEN_API_SECURITY_SCHEME_NAME } from '../constants'
 
 export interface StandardEndpointDocumentationOptions {
   summary: string
@@ -71,7 +72,7 @@ export const createStandardEndpointDocumentation = (
     summary,
     ...(description ? { description } : {}),
     ...(tags && tags.length > 0 ? { tags } : {}),
-    security: authenticated ? [{ ApiKey: [] }] : [],
+    security: authenticated ? [{ [OPEN_API_SECURITY_SCHEME_NAME]: [] }] : [],
     responses,
   }
 }

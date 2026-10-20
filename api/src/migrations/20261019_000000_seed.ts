@@ -1,4 +1,5 @@
 import type { MigrateDownArgs, MigrateUpArgs } from '@payloadcms/db-postgres'
+import { POSTS_COLLECTION_SLUG, SUPERADMIN_USER_ROLE, USERS_COLLECTION_SLUG } from '../constants'
 import { resolveInitialAdminCredentials } from '../utils/payloadSecurityUtils'
 
 export const up = async ({ payload, req }: MigrateUpArgs): Promise<void> => {
@@ -6,7 +7,7 @@ export const up = async ({ payload, req }: MigrateUpArgs): Promise<void> => {
 
   if (initialAdmin) {
     const existingUsers = await payload.find({
-      collection: 'users',
+      collection: USERS_COLLECTION_SLUG,
       where: {
         email: {
           equals: initialAdmin.email,
@@ -18,11 +19,11 @@ export const up = async ({ payload, req }: MigrateUpArgs): Promise<void> => {
 
     if (existingUsers.totalDocs === 0) {
       await payload.create({
-        collection: 'users',
+        collection: USERS_COLLECTION_SLUG,
         data: {
           email: initialAdmin.email,
           password: initialAdmin.password,
-          role: 'superadmin',
+          role: SUPERADMIN_USER_ROLE,
         },
         context: { system: true },
         req,
@@ -30,10 +31,10 @@ export const up = async ({ payload, req }: MigrateUpArgs): Promise<void> => {
       payload.logger.info(`✓ Seeded initial admin user: ${initialAdmin.email}`)
     } else {
       await payload.update({
-        collection: 'users',
+        collection: USERS_COLLECTION_SLUG,
         id: existingUsers.docs[0].id,
         data: {
-          role: 'superadmin',
+          role: SUPERADMIN_USER_ROLE,
         },
         context: { system: true },
         req,
@@ -47,7 +48,7 @@ export const up = async ({ payload, req }: MigrateUpArgs): Promise<void> => {
   }
 
   const existingPosts = await payload.find({
-    collection: 'posts',
+    collection: POSTS_COLLECTION_SLUG,
     where: {
       slug: {
         equals: 'hello-world',
@@ -59,7 +60,7 @@ export const up = async ({ payload, req }: MigrateUpArgs): Promise<void> => {
 
   if (existingPosts.totalDocs === 0) {
     await payload.create({
-      collection: 'posts',
+      collection: POSTS_COLLECTION_SLUG,
       data: {
         title: 'Hello World from Bun',
         slug: 'hello-world',
@@ -101,7 +102,7 @@ export const down = async ({ payload, req }: MigrateDownArgs): Promise<void> => 
   const initialAdmin = resolveInitialAdminCredentials()
 
   await payload.delete({
-    collection: 'posts',
+    collection: POSTS_COLLECTION_SLUG,
     where: {
       slug: {
         equals: 'hello-world',
@@ -112,7 +113,7 @@ export const down = async ({ payload, req }: MigrateDownArgs): Promise<void> => 
 
   if (initialAdmin) {
     await payload.delete({
-      collection: 'users',
+      collection: USERS_COLLECTION_SLUG,
       where: {
         email: {
           equals: initialAdmin.email,

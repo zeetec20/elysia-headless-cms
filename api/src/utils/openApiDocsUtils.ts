@@ -1,4 +1,4 @@
-const OPEN_API_DOCS_PATH = '/api/docs'
+import { OPEN_API_DOCS_PUBLIC_PATH } from '../constants'
 
 export const isOpenApiDocsDevelopmentEnvironment = (
   env: Record<string, string | undefined> = process.env,
@@ -18,5 +18,5 @@ export const resolveOpenApiDocsUrl = (
   port = 3000,
 ): string => {
   const baseUrl = (env.SERVER_URL || `http://localhost:${port}`).replace(/\/$/, '')
-  return `${baseUrl}${OPEN_API_DOCS_PATH}`
+  return `${baseUrl}${OPEN_API_DOCS_PUBLIC_PATH}`
 }

@@ -6,6 +6,7 @@ import { buildConfig } from 'payload'
 import { openapi, scalar } from 'payload-oapi'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
+import { OPEN_API_DOCS_ROUTE_PATH, OPEN_API_SECURITY_SCHEME_NAME } from './constants'
 import { secureOpenApiDocsPlugin, systemHealthPayloadEndpoint } from './handlers/system'
 import { endpointAuthMiddlewarePlugin } from './utils/endpointAuthUtils'
 import { resolvePayloadAuthSecret } from './utils/payloadSecurityUtils'
@@ -52,7 +53,7 @@ export default buildConfig({
         if (spec.components) {
           spec.components.securitySchemes = {
             ...spec.components.securitySchemes,
-            ApiKey: {
+            [OPEN_API_SECURITY_SCHEME_NAME]: {
               type: 'http',
               scheme: 'bearer',
               bearerFormat: 'JWT',
@@ -64,7 +65,7 @@ export default buildConfig({
       },
     }),
     scalar({
-      docsUrl: '/docs',
+      docsUrl: OPEN_API_DOCS_ROUTE_PATH,
     }),
     secureOpenApiDocsPlugin,
     endpointAuthMiddlewarePlugin,
